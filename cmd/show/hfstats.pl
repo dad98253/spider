@@ -25,17 +25,15 @@
 
 use Date::Parse;
 
-my $days = 31;
-my $now;
-my $date = cldate($main::systime);
-my $utime = $main::systime;
-
 sub handle
 {
 
 	my ($self, $line) = @_;
 	my @f = split /\s+/, $line;
 	my @out;
+	my $days = 31;
+
+	my $utime = $main::systime;
 
 	while (@f) {
 		my $f = shift @f;
@@ -43,8 +41,7 @@ sub handle
 		if ($f =~ /^\d+$/ && $f < 366) { # no of days
 			$days = $f;
 			next;
-		}
-		if (my $ut = Date::Parse::str2time($f)) { # is it a parseable date?
+		} elsif (my $ut = Date::Parse::str2time($f)) { # is it a parseable date?
 			$utime = $ut+3600;
 			next;
 		}
@@ -53,25 +50,26 @@ sub handle
 
 	return (1, @out) if @out;
 
-	$now = Julian::Day->new($utime);
+	my $now = Julian::Day->new($utime);
 	$now = $now->sub($days);
-	$date = cldate($utime);
+	my $today = cldate($utime);
 
-	@out = $self->spawn_cmd("show/hfstats $line", sub {
-							});
+#	@out = $self->spawn_cmd("show/hfstats $line", sub {
+#							});
 
 	if ($self->{_nospawn}) {
-		return (1, generate($self));
+		return (1, generate($self, $days, $now, $today));
 	}
 	else {
-		return (1, $self->spawn_cmd("show/hfstats $line", sub { (generate($self)); }));
+		return (1, $self->spawn_cmd("show/hfstats $line", sub { (generate($self, $days, $now, $today )); }));
 	}
 }
 
 
 sub generate
 {
-	my $self = shift;
+	my ($self, $days, $now, $today) = @_;
+	
 	my %list;
 	my @out;
 	my @in;
@@ -97,7 +95,7 @@ sub generate
 							
 	my @tot;
 							
-	push @out, $self->msg('stathf', $date, $days);
+	push @out, $self->msg('stathf', $today, $days);
 	push @out, sprintf "%6s|%6s|%5s|%5s|%5s|%5s|%5s|%5s|%5s|%5s|%5s|%5s|", qw(Date Total 160m 80m 60m 40m 30m 20m 17m 15m 12m 10m);
 	foreach my $ref (@in) {
 		my $linetot = 0;
@@ -106,9 +104,9 @@ sub generate
 			$tot[0] += $ref->[$j];
 			$linetot += $ref->[$j];
 		}
-		my $date = $ref->[0]->as_string;
-		$date =~ s/-\d+$//;
-		push @out, join '|', sprintf("%6s|%6d", $date, $linetot), map {$_ ? sprintf("%5d", $_) : '     '} @$ref[4..13], "";
+		my $today = $ref->[0]->as_string;
+		$today =~ s/-\d+$//;
+		push @out, join '|', sprintf("%6s|%6d", $today, $linetot), map {$_ ? sprintf("%5d", $_) : '     '} @$ref[4..13], "";
 	}
 	push @out, join '|', sprintf("%6s|%6d", 'Total', $tot[0]), map {$_ ? sprintf("%5d", $_) : '     '} @tot[4..13], "";
 	return @out

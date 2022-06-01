@@ -522,11 +522,11 @@ sub listdups
 	return DXDupe::listdups('X', $dupage, @_);
 }
 
-sub genstats($)
+sub genstats
 {
 	my $date = shift;
-	my $in = $fp->open($date);
-	my $out = $statp->open($date, 'w');
+	my $in = $fp->open($date) or dbg("Spot::genstats: Cannot open " . $fp->fn($date) . " $!");
+	my $out = $statp->open($date, 'w') or dbg("Spot::genstats: Cannot open " . $statp->fn($date) . " $!");
 	my @freq;
 	my %list;
 	my @tot;
@@ -569,7 +569,7 @@ sub genstats($)
 }
 
 # return true if the stat file is newer than than the spot file
-sub checkstats($)
+sub checkstats
 {
 	my $date = shift;
 	my $in = $fp->mtime($date);

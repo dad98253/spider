@@ -171,7 +171,7 @@ sub search
 	my $count;
 	my $i;
 
-	if ($t == $main::systime && ($to <= $maxcache)) {
+	if ($t == $main::systime && ($to && $to <= @cache)) {
 		dbg("using wcy cache") if isdbg('wcy');
 		@out = reverse @cache;
 		pop @out while @out > $to;

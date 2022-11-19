@@ -1,6 +1,6 @@
 ! $Id$
 !
-! This file was created by Jim Reisert AD1C on 01 Jun 2022
+! This file was created by Jim Reisert AD1C on 14 Nov 2022
 ! See: https://www.country-files.com/dx-cluster/wpxloc/
 !
 ! Highest DXCC number is 359 ("VERSION" entity)
@@ -1280,9 +1280,10 @@ EA5 A-AB-CS-MU-V-EA                                    34 37 14  -1.00 38 52  0 
 EA A-AB-CS-MU-V-EA5                                    34 37 14  -1.00 38 52  0 N   0 58  0 W
 AM5,AN5,AO5,EB5,EC5,ED5,EE5,EF5,EG5 A-AB-CS-MU-V-EA    34 37 14  -1.00 38 52  0 N   0 58  0 W
 EH5 A-AB-CS-MU-V-EA                                    34 37 14  -1.00 38 52  0 N   0 58  0 W
-EA7 Andalusia-EA                                       34 37 14  -1.00 37 15  0 N   4 41  0 W
-EA Andalusia-EA7                                       34 37 14  -1.00 37 15  0 N   4 41  0 W
-AM7,AN7,AO7,EB7,EC7,ED7,EE7,EF7,EG7,EH7 Andalusia-EA   34 37 14  -1.00 37 15  0 N   4 41  0 W
+EA7 AL-CA-CO-GR-H-J-MA-SE-EA                           34 37 14  -1.00 37 15  0 N   4 41  0 W
+EA AL-CA-CO-GR-H-J-MA-SE-EA7                           34 37 14  -1.00 37 15  0 N   4 41  0 W
+AM7,AN7,AO7,EB7,EC7,ED7,EE7 AL-CA-CO-GR-H-J-MA-SE-EA   34 37 14  -1.00 37 15  0 N   4 41  0 W
+EF7,EG7,EH7 AL-CA-CO-GR-H-J-MA-SE-EA                   34 37 14  -1.00 37 15  0 N   4 41  0 W
 EA6 Balearic-Islands-EA6                               35 37 14  -1.00 39 36  0 N   2 57  0 E @
 AM6,AN6,AO6,EB6,EC6,ED6,EE6,EF6 Balearic-Islands-EA6   35 37 14  -1.00 39 36  0 N   2 57  0 E
 EG6,EH6 Balearic-Islands-EA6                           35 37 14  -1.00 39 36  0 N   2 57  0 E
@@ -1386,7 +1387,7 @@ EZ Lebap-EZ7                                          188 30 17  -5.00 39  0  0 
 EZ8 Ashgabat-EZ                                       188 30 17  -5.00 37 56  0 N  58 22  0 E
 EZ Ashgabat-EZ8                                       188 30 17  -5.00 37 56  0 N  58 22  0 E
 F France-F                                             42 27 14  -1.00 46  0  0 N   2  0  0 E @
-HW,HX,HY,TH,TM,TP,TQ,TV France-F                       42 27 14  -1.00 46  0  0 N   2  0  0 E
+HW,HX,HY,TH,TM,TO,TP,TQ,TV,TX France-F                 42 27 14  -1.00 46  0  0 N   2  0  0 E
 FG Guadeloupe-FG                                       43 11  8   4.00 16  8  0 N  61 40  0 W @
 FH Mayotte-FH                                          44 53 39  -3.00 12 53  0 S  45  9  0 E @
 FJ St-Barthelemy-FJ                                   351 11  8   4.00 17 54  0 N  62 50  0 W @
@@ -1447,7 +1448,7 @@ FW/W Wallis-Island-FW                                  59 62 32 -12.00 13 16  0 
 FW Wallis-Island-FW/W                                  59 62 32 -12.00 13 16  0 S 176 12  0 W
 FY French-Guiana-FY                                    60 12  9   3.00  4  0  0 N  53  0  0 W @
 G England-G                                            61 27 14   0.00 52 46  0 N   1 28  0 W @
-2E,2Q,M England-G                                      61 27 14   0.00 52 46  0 N   1 28  0 W
+2E,M England-G                                         61 27 14   0.00 52 46  0 N   1 28  0 W
 GD Isle-of-Man-GD                                      62 27 14   0.00 54 12  0 N   4 32  0 W @
 2D,GT,MD,MT Isle-of-Man-GD                             62 27 14   0.00 54 12  0 N   4 32  0 W
 GI Northern-Ireland-GI                                 63 27 14   0.00 54 44  0 N   6 41  0 W @
@@ -1651,6 +1652,7 @@ HZ Jeddah-HZ/J                                         84 39 21  -3.00 21 32  0 
 HZ/R Riyadh-HZ                                         84 39 21  -3.00 24 38  0 N  46 43  0 E
 HZ Riyadh-HZ/R                                         84 39 21  -3.00 24 38  0 N  46 43  0 E
 I Italy-I                                              85 28 15  -1.00 42 49  0 N  12 35  0 E @
+4U Italy-I                                             85 28 15  -1.00 42 49  0 N  12 35  0 E
 I0 Lazio-Umbria-I                                      85 28 15  -1.00 41 53  0 N  12 32  0 E
 I Lazio-Umbria-I0                                      85 28 15  -1.00 41 53  0 N  12 32  0 E
 II0,IK0,IO0,IQ0,IR0,IU0,IW0,IZ0 Lazio-Umbria-I         85 28 15  -1.00 41 53  0 N  12 32  0 E
@@ -2792,8 +2794,12 @@ PW8 Rondonia-PY                                       142 12 11   3.00  8 45  0 
 PY Rondonia-PW8                                       142 12 11   3.00  8 45  0 S  63 54  0 W
 PY1 Rio-de-Janerio-PY                                 142 15 11   3.00 22 53  0 S  43 17  0 W
 PY Rio-de-Janerio-PY1                                 142 15 11   3.00 22 53  0 S  43 17  0 W
+PQ1,PR1,PS1,PT1,PU1,PV1,PW1,PX1 Rio-de-Janerio-PY     142 15 11   3.00 22 53  0 S  43 17  0 W
+ZV1,ZW1,ZX1,ZY1,ZZ1 Rio-de-Janerio-PY                 142 15 11   3.00 22 53  0 S  43 17  0 W
 PY2 Sao-Paulo-PY                                      142 15 11   3.00 23 33  0 S  46 38  0 W
 PY Sao-Paulo-PY2                                      142 15 11   3.00 23 33  0 S  46 38  0 W
+PR2,PS2,PU2,PV2,PW2,PX2,ZV2,ZW2,ZX2,ZY2 Sao-Paulo-PY  142 15 11   3.00 23 33  0 S  46 38  0 W
+ZZ2 Sao-Paulo-PY                                      142 15 11   3.00 23 33  0 S  46 38  0 W
 PY3 Rio-Grande-Sul-PY                                 142 15 11   3.00 30  3  0 S  51 11  0 W
 PY Rio-Grande-Sul-PY3                                 142 15 11   3.00 30  3  0 S  51 11  0 W
 PP3,PQ3,PR3,PS3,PT3,PU3,PV3,PW3 Rio-Grande-Sul-PY     142 15 11   3.00 30  3  0 S  51 11  0 W
@@ -2804,14 +2810,23 @@ PP4,PQ4,PR4,PS4,PT4,PU4,PV4,PW4,PX4 Minas-Gerias-PY   142 15 11   3.00 18 35  0 
 ZV4,ZW4,ZX4,ZY4,ZZ4 Minas-Gerias-PY                   142 15 11   3.00 18 35  0 S  46 32  0 W
 PY5 Parana-PY                                         142 15 11   3.00 25 25  0 S  49  7  0 W
 PY Parana-PY5                                         142 15 11   3.00 25 25  0 S  49  7  0 W
+PQ5,PR5,PS5,PT5,PU5,PV5,PW5,PX5,ZV5,ZW5 Parana-PY     142 15 11   3.00 25 25  0 S  49  7  0 W
+ZX5,ZY5,ZZ5 Parana-PY                                 142 15 11   3.00 25 25  0 S  49  7  0 W
 PY6 Bahia-PY                                          142 13 11   3.00 12 58  0 S  38 29  0 W
 PY Bahia-PY6                                          142 13 11   3.00 12 58  0 S  38 29  0 W
+PQ6,PR6,PS6,PT6,PU6,PV6,PW6,PX6,ZV6,ZW6,ZX6 Bahia-PY  142 13 11   3.00 12 58  0 S  38 29  0 W
+ZY6,ZZ6 Bahia-PY                                      142 13 11   3.00 12 58  0 S  38 29  0 W
 PY7 Pernambuco-PY                                     142 13 11   3.00  8  4  0 S  34 53  0 W
 PY Pernambuco-PY7                                     142 13 11   3.00  8  4  0 S  34 53  0 W
+PQ7,PU7,PV7,PW7,PX7,ZV7,ZW7,ZX7,ZY7 Pernambuco-PY     142 13 11   3.00  8  4  0 S  34 53  0 W
+ZZ7 Pernambuco-PY                                     142 13 11   3.00  8  4  0 S  34 53  0 W
 PY8 Para-PY                                           142 13 11   3.00  1 27  0 S  48 29  0 W
 PY Para-PY8                                           142 13 11   3.00  1 27  0 S  48 29  0 W
+PU8,PX8,ZV8,ZW8,ZX8,ZY8,ZZ8 Para-PY                   142 13 11   3.00  1 27  0 S  48 29  0 W
 PY9 Mato-Grosso-PY                                    142 13 11   3.00 15 32  0 S  56  5  0 W
 PY Mato-Grosso-PY9                                    142 13 11   3.00 15 32  0 S  56  5  0 W
+PP9,PQ9,PR9,PS9,PU9,PV9,PW9,PX9,ZV9 Mato-Grosso-PY    142 13 11   3.00 15 32  0 S  56  5  0 W
+ZW9,ZX9,ZY9,ZZ9 Mato-Grosso-PY                        142 13 11   3.00 15 32  0 S  56  5  0 W
 PY0F Fernando-de-Noronha-PY0F                         144 13 11   2.00  3 51  0 S  32 26  0 W @
 PY0 Fernando-de-Noronha-PY0F                          144 13 11   2.00  3 51  0 S  32 26  0 W
 PP0F,PP0ZF,PQ0F,PQ0ZF,PR0F Fernando-de-Noronha-PY0F   144 13 11   2.00  3 51  0 S  32 26  0 W
@@ -4147,17 +4162,17 @@ UG8I,UG9H,UG9I,UH8H,UH8I,UH9H,UH9I,UI8H Tomskaya-UA9  182 31 18  -7.00 58 45  0 
 UI8I,UI9H,UI9I Tomskaya-UA9                           182 31 18  -7.00 58 45  0 N  82  8  0 E
 UA9J Khanty-Mansyisky-UA9                             182 20 17  -6.00 62 15  0 N  70 10  0 E
 UA9 Khanty-Mansyisky-UA9J                             182 20 17  -6.00 62 15  0 N  70 10  0 E
-R19J,R8J,R9J,RA8J,RA9J,RC8J Khanty-Mansyisky-UA9      182 20 17  -6.00 62 15  0 N  70 10  0 E
-RC9J,RD8J,RD9J,RE8J,RE9J,RF8J Khanty-Mansyisky-UA9    182 20 17  -6.00 62 15  0 N  70 10  0 E
-RF9J,RG8J,RG9J,RJ8J,RJ9J,RK8J Khanty-Mansyisky-UA9    182 20 17  -6.00 62 15  0 N  70 10  0 E
-RK9J,RL8J,RL9J,RM8J,RM9J,RN8J Khanty-Mansyisky-UA9    182 20 17  -6.00 62 15  0 N  70 10  0 E
-RN9J,RO8J,RO9J,RQ8J,RQ9J,RT8J Khanty-Mansyisky-UA9    182 20 17  -6.00 62 15  0 N  70 10  0 E
-RT9J,RU8J,RU9J,RV8J,RV9J,RW8J Khanty-Mansyisky-UA9    182 20 17  -6.00 62 15  0 N  70 10  0 E
-RW9J,RX8J,RX9J,RY8J,RY9J,RZ8J Khanty-Mansyisky-UA9    182 20 17  -6.00 62 15  0 N  70 10  0 E
-RZ9J,U8J,U9J,UA8J,UB8J,UB9J Khanty-Mansyisky-UA9      182 20 17  -6.00 62 15  0 N  70 10  0 E
-UC8J,UC9J,UD8J,UD9J,UE8J,UE9J Khanty-Mansyisky-UA9    182 20 17  -6.00 62 15  0 N  70 10  0 E
-UF8J,UF9J,UG8J,UG9J,UH8J,UH9J Khanty-Mansyisky-UA9    182 20 17  -6.00 62 15  0 N  70 10  0 E
-UI8J,UI9J Khanty-Mansyisky-UA9                        182 20 17  -6.00 62 15  0 N  70 10  0 E
+R8J,R9J,RA8J,RA9J,RC8J,RC9J Khanty-Mansyisky-UA9      182 20 17  -6.00 62 15  0 N  70 10  0 E
+RD8J,RD9J,RE8J,RE9J,RF8J,RF9J Khanty-Mansyisky-UA9    182 20 17  -6.00 62 15  0 N  70 10  0 E
+RG8J,RG9J,RJ8J,RJ9J,RK8J,RK9J Khanty-Mansyisky-UA9    182 20 17  -6.00 62 15  0 N  70 10  0 E
+RL8J,RL9J,RM8J,RM9J,RN8J,RN9J Khanty-Mansyisky-UA9    182 20 17  -6.00 62 15  0 N  70 10  0 E
+RO8J,RO9J,RQ8J,RQ9J,RT8J,RT9J Khanty-Mansyisky-UA9    182 20 17  -6.00 62 15  0 N  70 10  0 E
+RU8J,RU9J,RV8J,RV9J,RW8J,RW9J Khanty-Mansyisky-UA9    182 20 17  -6.00 62 15  0 N  70 10  0 E
+RX8J,RX9J,RY8J,RY9J,RZ8J,RZ9J Khanty-Mansyisky-UA9    182 20 17  -6.00 62 15  0 N  70 10  0 E
+U8J,U9J,UA8J,UB8J,UB9J,UC8J Khanty-Mansyisky-UA9      182 20 17  -6.00 62 15  0 N  70 10  0 E
+UC9J,UD8J,UD9J,UE8J,UE9J,UF8J Khanty-Mansyisky-UA9    182 20 17  -6.00 62 15  0 N  70 10  0 E
+UF9J,UG8J,UG9J,UH8J,UH9J,UI8J Khanty-Mansyisky-UA9    182 20 17  -6.00 62 15  0 N  70 10  0 E
+UI9J Khanty-Mansyisky-UA9                             182 20 17  -6.00 62 15  0 N  70 10  0 E
 UA9K Yamalo-Nenetsky-UA9                              182 20 17  -6.00 65 18  0 N  74  2  0 E
 UA9 Yamalo-Nenetsky-UA9K                              182 20 17  -6.00 65 18  0 N  74  2  0 E
 R8K,R9K,RA8K,RA9K,RC8K,RC9K,RD8K Yamalo-Nenetsky-UA9  182 20 17  -6.00 65 18  0 N  74  2  0 E
@@ -5028,7 +5043,7 @@ VE Labrador-VO2                                       197  9  2   4.00 53 56  0 
 CH2,CY2,VD2,XJ2,XN2 Labrador-VE                       197  9  2   4.00 53 56  0 N  61  4  0 W
 VY0 Nunavut-VE                                        197  4  2   4.00 65 15  0 N  83 36  0 W
 VE Nunavut-VY0                                        197  4  2   4.00 65 15  0 N  83 36  0 W
-CI0,CZ0,VF0,XK0,XO0 Nunavut-VE                        197  4  2   4.00 65 15  0 N  83 36  0 W
+CI0,CZ0,XK0,XO0 Nunavut-VE                            197  4  2   4.00 65 15  0 N  83 36  0 W
 VY0/4 Nunavut-East-VE                                 197  4  4   4.00 65 15  0 N  83 36  0 W
 VE Nunavut-East-VY0/4                                 197  4  4   4.00 65 15  0 N  83 36  0 W
 VY1 Yukon-VE                                          197  2  1   7.00 60 43  0 N 135  3  0 W
@@ -5273,7 +5288,7 @@ Z6 Republic-of-Kosovo-Z6                              359 28 15  -1.00 42 40  0 
 Z8 Republic-of-South-Sudan-Z8                         357 48 34  -3.00  4 51  0 N  31 36  0 E @
 ZA Albania-ZA                                         248 28 15  -1.00 41  0  0 N  20  0  0 E @
 ZB Gibraltar-ZB                                       249 37 14  -1.00 36  9  0 N   5 22  0 W @
-ZG,ZQ Gibraltar-ZB                                    249 37 14  -1.00 36  9  0 N   5 22  0 W
+ZG Gibraltar-ZB                                       249 37 14  -1.00 36  9  0 N   5 22  0 W
 ZC4 UK-Base-Areas-on-Cyprus-ZC4                       250 39 20  -2.00 35 19  0 N  33 34  0 E @
 ZD7 St-Helena-ZD7                                     251 66 36   0.00 15 58  0 S   5 43  0 W @
 ZD8 Ascension-Island-ZD8                              252 66 36   0.00  7 56  0 S  14 22  0 W @

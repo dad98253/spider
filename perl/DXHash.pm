@@ -31,7 +31,7 @@ sub new
 
 	# move existing file
 	localdata_mv($name);
-	my $s = readfilestr($main::local_data, $name);
+	my $s = readfilestr($main::local_data, localdata($name));
 	my $self = undef;
 	$self = eval $s if $s;
 	dbg("error in reading $name in DXHash $@") if $@;

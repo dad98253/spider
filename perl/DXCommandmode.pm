@@ -406,7 +406,7 @@ sub normal
 	} 
 
 	# check for excessive swearing
-	if ($self->{badcount} && $self->{badcount} >= $maxbadcount) {
+	if ($maxbadcount && $self->{badcount} && $self->{badcount} >= $maxbadcount) {
 		LogDbg('DXCommand', "$self->{call} logged out for excessive swearing");
 		$self->disconnect;
 		return;

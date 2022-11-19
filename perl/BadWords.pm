@@ -19,41 +19,27 @@ use IO::File;
 
 use vars qw($badword $regexcode);
 
-my $oldfn = localdata("badwords");
-my $regex = localdata("badw_regex");
-my $bwfn = localdata("badword");
-
-# copy issue ones across
-filecopy("$regex.gb.issue", $regex) unless -e $regex;
-filecopy("$bwfn.issue", $bwfn) unless -e $bwfn;
-
-$badword = new DXHash "badword";
+our $regex;
 
 # load the badwords file
 sub load
 {
-	my @out;
-	my $fh = new IO::File $oldfn;
+	my $bwfn = localdata("badword");
+	filecopy("$main::data.issue", $bwfn) unless -e $bwfn;
 	
-	if ($fh) {
-		while (<$fh>) {
-			chomp;
-			next if /^\s*\#/;
-			my @list = split " ";
-			for (@list) {
-				$badword->add($_);
-			}
-		}
-		$fh->close;
-		$badword->put;
-		unlink $oldfn;
-	}
+	my @out;
+
+	$badword = new DXHash "badword";
+	
 	push @out, create_regex(); 
 	return @out;
 }
 
 sub create_regex
 {
+	$regex = localdata("badw_regex");
+	filecopy("$regex.gb.issue", $regex) unless -e $regex;
+	
 	my @out;
 	my $fh = new IO::File $regex;
 	
@@ -69,7 +55,7 @@ sub create_regex
 				my $w = uc $_;
 				my @l = split //, $w;
 				my $e = join '+[\s\W]*', @l;
-				$s .= "push \@out, \$1 if \$str =~ /\\b($e)/;\n";
+				$s .= qq{push \@out, \$1 if \$str =~ m|\\b($e+)|;\n};
 			}
 		}
 		$s .= "return \@out;\n}";

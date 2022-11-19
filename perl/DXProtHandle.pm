@@ -93,7 +93,8 @@ sub handle_10
 	if ($censorpc) {
 		my @bad;
 		if (@bad = BadWords::check($pc->[3])) {
-			dbg("PCPROT: Bad words: @bad, dropped") if isdbg('chanerr');
+			my $bw = join ', ', @bad; 
+			dbg("PCPROT: Bad words: '$bw', dropped");
 			return;
 		}
 	}
@@ -205,8 +206,10 @@ sub handle_11
 	}
 
 	# is it 'baddx'
-	if ($baddx->in($pc->[2]) || BadWords::check($pc->[2])) {
-		dbg("PCPROT: Bad DX spot, ignored") if isdbg('chanerr');
+	if ($baddx->in($pc->[2]) || (my @bad = BadWords::check($pc->[2]))) {
+		my $bw = join ', ', @bad;
+		$bw = qq{ '$bw'} if $bw;
+		dbg("PCPROT: Bad DX spot$bw, ignored") if isdbg('chanerr');
 		return;
 	}
 
@@ -220,7 +223,8 @@ sub handle_11
 	if ($censorpc) {
 		my @bad;
 		if (@bad = BadWords::check($pc->[5])) {
-			dbg("PCPROT: Bad words: @bad, dropped") if isdbg('chanerr');
+			my $bw = join ', ', @bad;
+			dbg("PCPROT: Bad words: '$bw', dropped");
 			return;
 		}
 	}
@@ -439,7 +443,8 @@ sub handle_12
 	if ($censorpc) {
 		my @bad;
 		if (@bad = BadWords::check($pc->[3])) {
-			dbg("PCPROT: Bad words: @bad, dropped") if isdbg('chanerr');
+			my $bw = join ', ', @bad;
+			dbg("PCPROT: Bad words: '$bw', dropped");
 			return;
 		}
 	}
@@ -2257,7 +2262,8 @@ sub handle_93
 	if ($censorpc) {
 		my @bad;
 		if (@bad = BadWords::check($text)) {
-			dbg("PCPROT: Bad words: @bad, dropped") if isdbg('chanerr');
+			my $bw = join ', ', @bad;
+			dbg("PCPROT: Bad words: '$bw', dropped");
 			return;
 		}
 	}

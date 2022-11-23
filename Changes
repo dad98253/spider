@@ -1,3 +1,13 @@
+23Nov22=======================================================================
+1. The BadWord system has been rewritten. This change is pretty radical and
+   needs to be used with care as a word that is entered will be reduced to the
+   minimum sized string needed to match that word. 
+
+   This is effective a sysop command changeable version of the file badw_regex
+   but in a much more sysop friendly form. The (un)set/badword <word>...
+   commands now update the /spider/local_data/badword.new file in real time
+   without having to mess about with editing files and running load/badword.
+   load/badword still works, but you should now never need it.  
 19Nov22=======================================================================
 1. "Fix" Badword detection in spots and announces etc. 
    NOTE: setting $DXCommandmode::maxbadcount to 0 (default 3) will disable

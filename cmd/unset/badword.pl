@@ -9,6 +9,24 @@ my ($self, $line) = @_;
 return (1, $self->msg('e5')) if $self->remotecmd;
 # are we permitted?
 return (1, $self->msg('e5')) if $self->priv < 6;
-$line = join(' ', map {s|[/-]\d+$||; $_} split(/\s+/, $line));
-return $BadWords::badword->unset(8, $self->msg('e6'), $self, $line);
+
+my @words = split /\s+/, uc $line;
+my @out;
+my $count = 0;
+foreach my $w (@words) {
+	my @in;
+	
+	unless (@in = BadWords::check($w)) {
+		push @out, "BadWord $w not defined, ignored";
+	} else {
+		@in = BadWords::del_regex($w);
+		push @out, "BadWord $w removed";
+		$count++;
+	}
+}
+if ($count) {
+	BadWords::generate_regex();
+	BadWords::put();
+}
+return (1, @out);
 

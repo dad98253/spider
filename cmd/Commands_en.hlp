@@ -1641,22 +1641,39 @@ Use with extreme care. This command may well be superceded by FILTERing.
 This command will also stop TALK and ANNOUNCE/FULL from any user marked
 as a BADSPOTTER.
 
-=== 6^SET/BADWORD <word>..^Stop things with this word being propagated
-=== 6^UNSET/BADWORD <word>..^Propagate things with this word again
+=== 6^SET/BADWORD <word>..^Stop things like this word being propagated
 Setting a word as a 'badword' will prevent things like spots,
 announces or talks with this word in the the text part from going any
 further. They will not be displayed and they will not be sent onto
 other nodes.
 
-The word must be written in full, no wild cards are allowed eg:-
+This has changed its meaning from the master release. All words entered
+are reduced to the minimum regex that will match words starting like
+this one:
 
-  set/badword annihilate annihilated annihilation 
+  set/badword annihilate
 
-will stop anything with these words in the text.
+will stop anything that starts with these words in the text 
+like this:
 
-  unset/badword annihilated
+  annihilate annihilated
 
-will allow text with this word again.
+but it will also stop things like this:
+
+  anihilate annni11ihhh ii lllattt eee ddd
+
+A few common 'leet' substitutions are automatically matched:
+
+  b0ll0cks bo0lll0ccckks fr1iig
+
+and so on
+
+=== 6^UNSET/BADWORD <word>..^Propagate things like this word again
+This is the opposite of set/badword <word>
+
+  unset/badword fred
+  
+will allow text with this word again (if it has been set as a bad word.
 
 === 0^SET/BEEP^Add a beep to DX and other messages on your terminal
 === 0^UNSET/BEEP^Stop beeps for DX and other messages on your terminal

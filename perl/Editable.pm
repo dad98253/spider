@@ -39,7 +39,7 @@ sub addline
 	my $dxchan = shift;
 	my $line = shift;
 	
-	if (my @ans = BadWord::check($line)) {
+	if (my @ans = BadWords::check($line)) {
 		return ($dxchan->msg('e17', @ans));
 	}
 	push @{$self->{lines}}, $line;
@@ -53,7 +53,7 @@ sub modline
 	my $no = shift;
 	my $line = shift;
 
-	if (my @ans = BadWord::check($line)) {
+	if (my @ans = BadWords::check($line)) {
 		return ($dxchan->msg('e17', @ans));
 	}
     ${$self->{lines}}[$no] = $line;

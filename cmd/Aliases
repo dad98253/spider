@@ -31,6 +31,7 @@ package CmdAlias;
 				  '^ann?o?u?n?c?e?/full', 'announce full', 'announce', 
 				  '^ann?o?u?n?c?e?/sysop', 'announce sysop', 'announce',
 				  '^ann?o?u?n?c?e?/(.*)$', 'announce $1', 'announce',
+				  '^add/badwo?r?d?$', 'set/badword $1', 'set/badword',
 				 ],
 		  'b' => [
 				  '^b$', 'bye', 'bye',
@@ -40,6 +41,7 @@ package CmdAlias;
 				  '^cre?a?t?e?$', 'apropos create', 'apropos',
 				 ],
 		  'd' => [
+				  '^dele?t?e?/badwo?r?d?$', 'unset/badword $1', 'unset/badword',
 				  '^dele?t?e?/fu', 'kill full', 'kill',
 				  '^dele?t?e?$', 'kill', 'kill',
 				  '^dir?e?c?t?o?r?y?/a\w*', 'directory all', 'directory',

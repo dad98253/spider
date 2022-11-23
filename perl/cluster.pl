@@ -671,7 +671,7 @@ sub setup_start
 	UDPMsg::init(\&new_channel);
 
 	# load bad words
-	dbg("load badwords: " . (BadWords::load() or "Ok"));
+	BadWords::load();
 
 	# prime some signals
 	unless ($DB::VERSION) {

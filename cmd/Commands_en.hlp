@@ -2179,12 +2179,16 @@ for more information.
 
 === 6^SHOW/BADWORD^Show all the bad words in the system
 === 6^SHOW/BADWORD full^Show all badwords with their Regex
+=== 6^SHOW/BADWORD <word> ...^Show all badwords with their Regex
 Display all the bad words in the system, see SET/BADWORD
 for more information.
 
 The first form shows all the base words that are stored in a simple list.
 
-The second form show each word with its associated perl regex.
+The second form list all words with their associated perl regex.
+
+The third form shows just the regexes for the words asked for. If no
+answer for a word is given then it is not defined.
 
 === 0^SHOW/BANDS [band|region names]^Show the list of bands and regions
 Display the bands and regions (collections of bands) known to

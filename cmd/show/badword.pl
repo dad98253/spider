@@ -5,18 +5,31 @@
 #
 #
 #
+
 my ($self, $line) = @_;
 return (1, $self->msg('e5')) if $self->remotecmd;
 # are we permitted?
 return (1, $self->msg('e5')) if $self->priv < 6;
+
 my @out;
 my @l;
 my $count = 0;
+my @words = BadWords::check($line);
+my $cand;
+my $w;
 
-if ($line =~ /^\s*full/i) {
-	foreach my $w (BadWords::list_regex(1)) {
+push @out, "Words: " . join ',', @words; 
+
+if ($line =~ /^\s*full/i || @words) {
+	foreach $w (BadWords::list_regex(1)) {
 		++$count;
-		push @out, $w; 
+		if ($line =~ /^\s*full/) {
+			push @out, $w; 
+		} elsif (@words) {
+		    ($cand) = split /\s+/, $w;
+			#push @out, "cand: $cand"; 
+			push @out, $w if grep {$cand eq $_} @words; 
+		}
 	}
 }
 else {

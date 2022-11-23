@@ -1660,13 +1660,17 @@ like this:
 
 but it will also stop things like this:
 
-  anihilate annni11ihhh ii lllattt eee ddd
+  anihilate annni11ihhh ii lllattt eee
 
 A few common 'leet' substitutions are automatically matched:
 
-  b0ll0cks bo0lll0ccckks fr1iig
+  b0ll0cks bo0lll0ccckks fr1iigging
 
 and so on
+
+It will not stop some things like:
+
+  The base word FRIG will stop 'friiigging' but not 'friiig ging'
 
 === 6^UNSET/BADWORD <word>..^Propagate things like this word again
 This is the opposite of set/badword <word>
@@ -2173,9 +2177,14 @@ for more information.
 Display all the bad spotter's callsigns in the system, see SET/BADSPOTTER
 for more information.
 
-=== 1^SHOW/BADWORD^Show all the bad words in the system
+=== 6^SHOW/BADWORD^Show all the bad words in the system
+=== 6^SHOW/BADWORD full^Show all badwords with their Regex
 Display all the bad words in the system, see SET/BADWORD
 for more information.
+
+The first form shows all the base words that are stored in a simple list.
+
+The second form show each word with its associated perl regex.
 
 === 0^SHOW/BANDS [band|region names]^Show the list of bands and regions
 Display the bands and regions (collections of bands) known to

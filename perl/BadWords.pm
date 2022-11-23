@@ -135,7 +135,7 @@ sub generate_regex
 	my $res;
 	@relist = sort {$a->[0] cmp $b->[0]} @relist;
 	for (@relist) {
-		$res .= qq{(?:$_->[1]) |\n};
+		$res .= qq{\\b(?:$_->[1]) |\n};
 	}
 	$res =~ s/\s*\|\s*$//;
 	$regex = qr/\b($res)/x;
@@ -211,7 +211,7 @@ sub check
 	
 	if ($regex) {
 		my %uniq;
-		@out = grep {++$uniq{$_}; $uniq{$_} == 1 ? $_ : undef }($s =~ /\b($regex)/g);
+		@out = grep {++$uniq{$_}; $uniq{$_} == 1 ? $_ : undef }($s =~ /($regex)/g);
 		dbg("BadWords: check '$s' = '" . join(', ', @out) . "'") if isdbg('badword');
 		return @out;
 	}

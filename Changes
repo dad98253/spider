@@ -2,12 +2,10 @@
 1. Re-add some debugging to see which incoming PC protcol sentences are
    being dumped because of any bad content (words or calls) if debugging
    option 'nologchan' is set.
-2. Any line entered by a user is checked for badwords *before* being sent to
-   the command processing system.
-3. All debugging for badwords has the word 'badword' in it. So that one can
+2. All debugging for badwords has the word 'badword' in it. So that one can
    do a 'grepdbg -1 badword' and one should see who said it and all of what
    they said. Watchdbg will also work with this.
-4. My latest recommended additions to the badword list includes:
+3. My latest recommended additions to the badword list includes:
    RU STOP SPOT DISGRACE CRM CRIM CRUD SUBHUMAN FASCIST DEGENERATE CATTLE CNT
 23Nov22=======================================================================
 1. The BadWord system has been rewritten. This change is pretty radical and

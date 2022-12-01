@@ -187,9 +187,6 @@ $yes //= 'Yes';					# visual representation of yes
 $no //= 'No';				    # ditto for no
 $user_interval //= 11*60;		# the interval between unsolicited prompts if no traffic
 
-
-$clusteraddr //= '127.0.0.1';     # cluster tcp host address - used for things like console.pl
-$clusterport //= 27754;           # cluster tcp port
 @inqueue = ();					# the main input queue, an array of hashes
 $systime = 0;					# the time now (in seconds)
 $starttime = 0;                 # the starting time of the cluster

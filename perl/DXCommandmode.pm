@@ -259,6 +259,7 @@ sub normal
 	my $self = shift;
 	my $cmdline = shift;
 	my @ans;
+	my @bad;
 
 	# save this for them's that need it
 	my $rawline = $cmdline;
@@ -345,15 +346,14 @@ sub normal
 		} elsif ($cmdline =~ m|^/+\w+|) {
 			$cmdline =~ s|^/||;
 			my $sendit = $cmdline =~ s|^/+||;
-			my @in = $self->run_cmd($cmdline);
-			$self->send_ans(@in);
-			if ($sendit && $self->{talklist} && @{$self->{talklist}}) {
-				foreach my $l (@in) {
-					my @bad;
-					if (@bad = BadWords::check($l)) {
-						$self->badcount(($self->badcount||0) + @bad);
-						LogDbg('DXCommand', "$self->{call} swore: $l with words:" . join(',', @bad) . ")");
-					} else {
+			if (@bad = BadWords::check($cmdline)) {
+				$self->badcount(($self->badcount||0) + @bad);
+				LogDbg('DXCommand', "$self->{call} swore: '$cmdline' with words: '" . join(',', @bad) . "'");
+			} else {
+				my @in = $self->run_cmd($cmdline);
+				$self->send_ans(@in);
+				if ($sendit && $self->{talklist} && @{$self->{talklist}}) {
+					foreach my $l (@in) {
 						for (@{$self->{talklist}}) {
 							if ($self->{state} eq 'talk') {
 								$self->send_talks($_, $l);
@@ -367,10 +367,9 @@ sub normal
 			$self->send($self->{state} eq 'talk' ? $self->talk_prompt : $self->chat_prompt);
 		} elsif ($self->{talklist} && @{$self->{talklist}}) {
 			# send what has been said to whoever is in this person's talk list
-			my @bad;
 			if (@bad = BadWords::check($cmdline)) {
 				$self->badcount(($self->badcount||0) + @bad);
-				LogDbg('DXCommand', "$self->{call} swore: $cmdline with words:" . join(',', @bad) . ")");
+				LogDbg('DXCommand', "$self->{call} swore: '$cmdline' with words: '" . join(',', @bad) . "'");
 			} else {
 				for (@{$self->{talklist}}) {
 					if ($self->{state} eq 'talk') {
@@ -402,7 +401,12 @@ sub normal
 		}
 		$self->send_ans(@ans);
 	} else {
-		$self->send_ans(run_cmd($self, $cmdline));
+		if (@bad = BadWords::check($cmdline)) {
+			$self->badcount(($self->badcount||0) + @bad);
+			LogDbg('DXCommand', "$self->{call} swore: '$cmdline' with words: '" . join(',', @bad) . "'");
+		} else {
+			$self->send_ans(run_cmd($self, $cmdline));
+		}
 	} 
 
 	# check for excessive swearing

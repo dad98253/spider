@@ -94,7 +94,8 @@ sub handle_10
 		my @bad;
 		if (@bad = BadWords::check($pc->[3])) {
 			my $bw = join ', ', @bad; 
-			dbg("PCPROT: Bad words: '$bw', dropped");
+			dbg($line) if isdbg('nologchan');
+			dbg("PCPROT: Badwords: '$bw', dropped");
 			return;
 		}
 	}
@@ -111,7 +112,8 @@ sub handle_10
 
 	# if this is a 'nodx' node then ignore it
 	if ($badnode->in($pc->[6]) || ($via && $badnode->in($via))) {
-		dbg("PCPROT: Bad Node, dropped") if isdbg('chanerr');
+		dbg($line) if isdbg('nologchan');
+		dbg("PCPROT: Bad Node, dropped");
 		return;
 	}
 
@@ -119,7 +121,8 @@ sub handle_10
 	my $nossid = $from;
 	$nossid =~ s/-\d+$//;
 	if ($badspotter->in($nossid)) {
-		dbg("PCPROT: Bad Spotter, dropped") if isdbg('chanerr');
+		dbg($line) if isdbg('nologchan');
+		dbg("PCPROT: Bad Spotter, dropped");
 		return;
 	}
 
@@ -164,18 +167,21 @@ sub handle_11
 	# is the spotted callsign blank? This should really be trapped earlier but it
 	# could break other protocol sentences. Also check for lower case characters.
 	if ($pc->[2] =~ /^\s*$/) {
-		dbg("PCPROT: blank callsign, dropped") if isdbg('chanerr');
+		dbg($line) if isdbg('nologchan');
+		dbg("PCPROT: blank callsign, dropped");
 		return;
 	}
 	if ($pc->[2] =~ /[a-z]/) {
-		dbg("PCPROT: lowercase characters, dropped") if isdbg('chanerr');
+		dbg($line) if isdbg('nologchan');
+		dbg("PCPROT: lowercase characters, dropped");
 		return;
 	}
 
 
 	# if this is a 'nodx' node then ignore it
 	if ($badnode->in($pc->[7])) {
-		dbg("PCPROT: Bad Node $pc->[7], dropped") if isdbg('chanerr');
+		dbg($line) if isdbg('nologchan');
+		dbg("PCPROT: Bad Node $pc->[7], dropped");
 		return;
 	}
 
@@ -183,7 +189,8 @@ sub handle_11
 	my $nossid = $pc->[6];
 	$nossid =~ s/-\d+$//;
 	if ($badspotter->in($nossid)) {
-		dbg("PCPROT: Bad Spotter $pc->[6], dropped") if isdbg('chanerr');
+		dbg($line) if isdbg('nologchan');
+		dbg("PCPROT: Bad Spotter $pc->[6], dropped");
 		return;
 	}
 
@@ -201,7 +208,7 @@ sub handle_11
 	my $d = cltounix($pc->[3], $pc->[4]);
 	# bang out (and don't pass on) if date is invalid or the spot is too old (or too young)
 	if (!$d || (($pcno == 11 || $pcno == 61) && ($d < $main::systime - $pc11_max_age || $d > $main::systime + 900))) {
-		dbg("PCPROT: Spot ignored, invalid date or out of range ($pc->[3] $pc->[4])\n") if isdbg('chanerr');
+		dbg("PCPROT: Spot ignored, invalid date or out of range ($pc->[3] $pc->[4])\n");
 		return;
 	}
 
@@ -209,7 +216,7 @@ sub handle_11
 	if ($baddx->in($pc->[2]) || (my @bad = BadWords::check($pc->[2]))) {
 		my $bw = join ', ', @bad;
 		$bw = qq{ '$bw'} if $bw;
-		dbg("PCPROT: Bad DX spot$bw, ignored") if isdbg('chanerr');
+		dbg("PCPROT: Bad DX spot$bw, ignored");
 		return;
 	}
 
@@ -224,7 +231,8 @@ sub handle_11
 		my @bad;
 		if (@bad = BadWords::check($pc->[5])) {
 			my $bw = join ', ', @bad;
-			dbg("PCPROT: Bad words: '$bw', dropped");
+			dbg($line) if isdbg('nologchan');
+			dbg("PCPROT: Badwords: '$bw', dropped");
 			return;
 		}
 	}
@@ -444,14 +452,16 @@ sub handle_12
 		my @bad;
 		if (@bad = BadWords::check($pc->[3])) {
 			my $bw = join ', ', @bad;
-			dbg("PCPROT: Bad words: '$bw', dropped");
+			dbg($line) if isdbg('nologchan');
+			dbg("PCPROT: Badwords: '$bw', dropped");
 			return;
 		}
 	}
 
 	# if this is a 'nodx' node then ignore it
 	if ($badnode->in($pc->[5])) {
-		dbg("PCPROT: Bad Node, dropped") if isdbg('chanerr');
+		dbg($line) if isdbg('nologchan');
+		dbg("PCPROT: Bad Node, dropped");
 		return;
 	}
 
@@ -459,7 +469,8 @@ sub handle_12
 	my $nossid = $pc->[1];
 	$nossid =~ s/-\d+$//;
 	if ($badspotter->in($nossid)) {
-		dbg("PCPROT: Bad Spotter, dropped") if isdbg('chanerr');
+		dbg($line) if isdbg('nologchan');
+		dbg("PCPROT: Bad Spotter, dropped");
 		return;
 	}
 
@@ -2263,7 +2274,8 @@ sub handle_93
 		my @bad;
 		if (@bad = BadWords::check($text)) {
 			my $bw = join ', ', @bad;
-			dbg("PCPROT: Bad words: '$bw', dropped");
+			dbg($line) if isdbg('nologchan');
+			dbg("PCPROT: Badwords: '$bw', dropped");
 			return;
 		}
 	}
@@ -2272,7 +2284,8 @@ sub handle_93
 	my $nossid = $from;
 	$nossid =~ s/-\d+$//;
 	if ($badspotter->in($nossid)) {
-		dbg("PCPROT: Bad Spotter, dropped") if isdbg('chanerr');
+		dbg($line) if isdbg('nologchan');
+		dbg("PCPROT: Bad Spotter, dropped");
 		return;
 	}
 

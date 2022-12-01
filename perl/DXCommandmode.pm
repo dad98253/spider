@@ -348,7 +348,7 @@ sub normal
 			my $sendit = $cmdline =~ s|^/+||;
 			if (@bad = BadWords::check($cmdline)) {
 				$self->badcount(($self->badcount||0) + @bad);
-				LogDbg('DXCommand', "$self->{call} swore: '$cmdline' with words: '" . join(',', @bad) . "'");
+				LogDbg('DXCommand', "$self->{call} swore: '$cmdline' with badwords: '" . join(',', @bad) . "'");
 			} else {
 				my @in = $self->run_cmd($cmdline);
 				$self->send_ans(@in);
@@ -369,7 +369,7 @@ sub normal
 			# send what has been said to whoever is in this person's talk list
 			if (@bad = BadWords::check($cmdline)) {
 				$self->badcount(($self->badcount||0) + @bad);
-				LogDbg('DXCommand', "$self->{call} swore: '$cmdline' with words: '" . join(',', @bad) . "'");
+				LogDbg('DXCommand', "$self->{call} swore: '$cmdline' with badwords: '" . join(',', @bad) . "'");
 			} else {
 				for (@{$self->{talklist}}) {
 					if ($self->{state} eq 'talk') {
@@ -401,12 +401,12 @@ sub normal
 		}
 		$self->send_ans(@ans);
 	} else {
-		if (@bad = BadWords::check($cmdline)) {
-			$self->badcount(($self->badcount||0) + @bad);
-			LogDbg('DXCommand', "$self->{call} swore: '$cmdline' with words: '" . join(',', @bad) . "'");
-		} else {
+#		if (@bad = BadWords::check($cmdline)) {
+#			$self->badcount(($self->badcount||0) + @bad);
+#			LogDbg('DXCommand', "$self->{call} swore: '$cmdline' with badwords: '" . join(',', @bad) . "'");
+#		} else {
 			$self->send_ans(run_cmd($self, $cmdline));
-		}
+#		}
 	} 
 
 	# check for excessive swearing

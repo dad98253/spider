@@ -5,8 +5,10 @@
 2. Any line entered by a user is checked for badwords *before* being sent to
    the command processing system.
 3. All debugging for badwords has the word 'badword' in it. So that one can
-   do a 'grepdbg -2 badword' and one should see who said it and all of what
-   they said. 
+   do a 'grepdbg -1 badword' and one should see who said it and all of what
+   they said. Watchdbg will also work with this.
+4. My latest recommended additions to the badword list includes:
+   RU STOP SPOT DISGRACE CRM CRIM CRUD SUBHUMAN FASCIST DEGENERATE CATTLE CNT
 23Nov22=======================================================================
 1. The BadWord system has been rewritten. This change is pretty radical and
    needs to be used with care as a word that is entered will be reduced to the

@@ -401,12 +401,12 @@ sub normal
 		}
 		$self->send_ans(@ans);
 	} else {
-#		if (@bad = BadWords::check($cmdline)) {
-#			$self->badcount(($self->badcount||0) + @bad);
-#			LogDbg('DXCommand', "$self->{call} swore: '$cmdline' with badwords: '" . join(',', @bad) . "'");
-#		} else {
+		if (@bad = BadWords::check($cmdline)) {
+			$self->badcount(($self->badcount||0) + @bad);
+			LogDbg('DXCommand', "$self->{call} swore: '$cmdline' with badwords: '" . join(',', @bad) . "'");
+		} else {
 			$self->send_ans(run_cmd($self, $cmdline));
-#		}
+		}
 	} 
 
 	# check for excessive swearing

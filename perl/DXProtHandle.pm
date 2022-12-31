@@ -89,16 +89,6 @@ sub handle_10
 		return;
 	}
 
-	# will we allow it at all?
-	if ($censorpc) {
-		my @bad;
-		if (@bad = BadWords::check($pc->[3])) {
-			my $bw = join ', ', @bad; 
-			dbg($line) if isdbg('nologchan');
-			dbg("PCPROT: Badwords: '$bw', dropped");
-			return;
-		}
-	}
 
 	# is it for me or one of mine?
 	my ($from, $to, $via, $call, $dxchan);
@@ -130,6 +120,17 @@ sub handle_10
 	if ($ann_to_talk) {
 		if (AnnTalk::is_talk_candidate($from, $pc->[3]) && AnnTalk::dup($from, $to, $pc->[3])) {
 			dbg("PCPROT: Dupe talk from announce, dropped") if isdbg('chanerr');
+			return;
+		}
+	}
+	
+	# will we allow it at all?
+	if ($censorpc) {
+		my @bad;
+		if (@bad = BadWords::check($pc->[3])) {
+			my $bw = join ', ', @bad; 
+			dbg($line) if isdbg('nologchan');
+			dbg("PCPROT: Badwords: '$bw', dropped");
 			return;
 		}
 	}
@@ -213,10 +214,8 @@ sub handle_11
 	}
 
 	# is it 'baddx'
-	if ($baddx->in($pc->[2]) || (my @bad = BadWords::check($pc->[2]))) {
-		my $bw = join ', ', @bad;
-		$bw = qq{ '$bw'} if $bw;
-		dbg("PCPROT: Bad DX spot$bw, ignored");
+	if ($baddx->in($pc->[2])) {
+		dbg("PCPROT: Bad DX spot '$pc->[2]', ignored");
 		return;
 	}
 
@@ -226,15 +225,6 @@ sub handle_11
 	if ($pc->[2] =~ /BUST\w*$/) {
 		dbg("PCPROT: useless 'BUSTED' spot") if isdbg('chanerr');
 		return;
-	}
-	if ($censorpc) {
-		my @bad;
-		if (@bad = BadWords::check($pc->[5])) {
-			my $bw = join ', ', @bad;
-			dbg($line) if isdbg('nologchan');
-			dbg("PCPROT: Badwords: '$bw', dropped");
-			return;
-		}
 	}
 	
 
@@ -331,6 +321,18 @@ sub handle_11
 				dbg("PCProt: Suspicious Spot $pc->[2] on $pc->[1] by $pc->[6]($ip)\@$pc->[7] $s$action");
 				return unless $senderverify < 2;
 			}
+		}
+	}
+
+# we until here to do any censorship to try and reduce the amount of noise that repeated copies
+# from other connected nodes cause
+	if ($censorpc) {
+		my @bad;
+		if (@bad = BadWords::check($pc->[5])) {
+			my $bw = join ', ', @bad;
+			dbg($line) if isdbg('nologchan');
+			dbg("PCPROT: Badwords: '$bw', dropped");
+			return;
 		}
 	}
 
@@ -448,16 +450,6 @@ sub handle_12
 	# announce duplicate checking
 	$pc->[3] =~ s/^\s+//;			# remove leading blanks
 
-	if ($censorpc) {
-		my @bad;
-		if (@bad = BadWords::check($pc->[3])) {
-			my $bw = join ', ', @bad;
-			dbg($line) if isdbg('nologchan');
-			dbg("PCPROT: Badwords: '$bw', dropped");
-			return;
-		}
-	}
-
 	# if this is a 'nodx' node then ignore it
 	if ($badnode->in($pc->[5])) {
 		dbg($line) if isdbg('nologchan');
@@ -480,6 +472,17 @@ sub handle_12
 		dbg("PCPROT: PC12 rxed from PC9x node, ignored") if isdbg('chanerr');
 		return;
 	}
+
+	if ($censorpc) {
+		my @bad;
+		if (@bad = BadWords::check($pc->[3])) {
+			my $bw = join ', ', @bad;
+			dbg($line) if isdbg('nologchan');
+			dbg("PCPROT: Badwords: '$bw', dropped");
+			return;
+		}
+	}
+
 
 	my $dxchan;
 
@@ -2268,17 +2271,6 @@ sub handle_93
 		my $s = "ANNTALK: $from\@$onode$vs -> $to '$text' route: $origin";
 		dbg($s);
 	}
-	
-	# will we allow it at all?
-	if ($censorpc) {
-		my @bad;
-		if (@bad = BadWords::check($text)) {
-			my $bw = join ', ', @bad;
-			dbg($line) if isdbg('nologchan');
-			dbg("PCPROT: Badwords: '$bw', dropped");
-			return;
-		}
-	}
 
 	# if this is a 'bad spotter' user then ignore it
 	my $nossid = $from;
@@ -2293,6 +2285,17 @@ sub handle_93
 	if ($to eq 'LOCAL' && $self != $main::me) {
 		dbg("PCPROT: incoming LOCAL chat not from local node, ignored") if isdbg('chanerr');
 		return;
+	}
+
+	# will we allow it at all?
+	if ($censorpc) {
+		my @bad;
+		if (@bad = BadWords::check($text)) {
+			my $bw = join ', ', @bad;
+			dbg($line) if isdbg('nologchan');
+			dbg("PCPROT: Badwords: '$bw', dropped");
+			return;
+		}
 	}
 
 	# if it is routeable then then treat it like a talk

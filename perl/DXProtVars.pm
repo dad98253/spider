@@ -2,6 +2,8 @@
 #
 # These are various values used by the AK1A protocol stack
 #
+# Copy this file to /spider/local before use!
+#
 # Change these at your peril (or if you know what you are doing)!
 #
 # Copyright (c) 1998 - Dirk Koopman G1TLH
@@ -22,11 +24,10 @@ $def_hopcount = 30;
 
 # some variable hop counts based on message type
 %hopcount = (
-  11 => 25,
-  16 => 25,
-  17 => 25,
-  19 => 25,
-  21 => 25,
+  16 => 15,
+  17 => 15,
+  19 => 15,
+  21 => 15,
 );
 
 # list of nodes we don't accept dx from

@@ -201,7 +201,8 @@ sub handle_11
 		$ip =~ s/,/:/g;
 		$ip =~ s/^::ffff://;
 		if (DXCIDR::find($ip)) {
-			
+			dbg("DXProt: Spot ignore $pc->[8] in badip list") if dbg('badip');
+			return;
 		}
 	}
 

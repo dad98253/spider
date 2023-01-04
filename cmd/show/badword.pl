@@ -1,7 +1,7 @@
 #
 # show list of bad dx callsigns
 #
-# Copyright (c) 1998 - Dirk Koopman G1TLH
+# Copyright (c) 2023 - Dirk Koopman G1TLH
 #
 #
 #

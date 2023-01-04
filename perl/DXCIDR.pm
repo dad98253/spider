@@ -16,6 +16,7 @@ use DXUtil;
 use DXLog;
 use IO::File;
 use File::Copy;
+use Socket qw(inet_pton inet_ntop);
 
 our $active = 0;
 our $badipfn = "badip";
@@ -28,8 +29,8 @@ my $count6 = 0;
 sub load
 {
 	if ($active) {
-		$count4 = _get($ipv4, 4);
-		$count6 = _get($ipv6, 6);
+		$count4 = _load($ipv4, 4);
+		$count6 = _load($ipv6, 6);
 	}
 	LogDbg('DXProt', "DXCIDR: loaded $count4 IPV4 addresses and $count6 IPV6 addresses");
 	return $count4 + $count6;
@@ -37,10 +38,10 @@ sub load
 
 sub _fn
 {
-	return localdata($badipfn) . "$_[0]";
+	return localdata($badipfn) . ".$_[0]";
 }
 
-sub _get
+sub _load
 {
 	my $list = shift;
 	my $sort = shift;
@@ -52,11 +53,13 @@ sub _get
 		while (<$fh>) {
 			chomp;
 			next if /^\s*\#/;
-			$list->add($_);
+			next unless /[\.:]/;
+			$list->add_any($_);
 			++$count;
 		}
 		$fh->close;
 		$list->clean if $count;
+		$list->prep_find;
 	} elsif (-r $fn) {
 		LogDbg('err', "DXCIDR: $fn not found ($!)");
 	}
@@ -82,18 +85,25 @@ sub _put
 
 sub add
 {
-	for (@_) {
+	for my $ip (@_) {
 		# protect against stupid or malicious
 		next if /^127\./;
 		next if /^::1$/;
 		if (/\./) {
-			$ipv4->add($_);
+			if ($ipv4->find($ip)) {
+				LogDbg('DXProt', "DXCIDR: Ignoring existing IPV4 $ip");
+				next;
+			} 
+			$ipv4->add_any($ip);
 			++$count4;
-			LogDbg('DXProt', "DXCIDR: Added IPV4 $_ address");
-		} else {
-			$ipv6->add($_);
+		} elsif (/:/) {
+			if ($ipv6->find($ip)) {
+				LogDbg('DXProt', "DXCIDR: Ignoring existing IPV6 $ip");
+				next;
+			} 
+			$ipv6->add_any($ip);
 			++$count6;
-			LogDbg('DXProt', "DXCIDR: Added IPV6 $_ address");
+			LogDbg('DXProt', "DXCIDR: Added IPV6 $ip address");
 		}
 	}
 	if ($ipv4 && $count4) {
@@ -109,25 +119,34 @@ sub add
 sub save
 {
 	return 0 unless $active;
-	my $list = $ipv4->list;
-	_put($list, 4) if $list;
-	$list = $ipv6->list;
-	_put($list, 6) if $list;
+	_put($ipv4, 4) if $count4;
+	_put($ipv6, 6) if $count6;
+}
+
+sub _sort
+{
+	my @in;
+	my @out;
+	for (@_) {
+		push @in, [inet_pton($_), split m|/|];
+	}
+	@out = sort {$a->[0] <=> $b->[0]} @in;
+	return map { "$_->[1]/$_->[2]"} @out;
 }
 
 sub list
 {
 	my @out;
-	push @out, $ipv4->list;
-	push @out, $ipv6->list;
-	return (1, sort @out);
+	push @out, $ipv4->list if $count4;
+	push @out, $ipv6->list if $count6;
+	return _sort(@out);
 }
 
 sub find
 {
 	return 0 unless $active;
 	return 0 unless $_[0];
-	
+
 	if ($_[0] =~ /\./) {
 		return $ipv4->find($_[0]) if $count4;
 	}
@@ -147,8 +166,8 @@ sub init
 	$ipv4 = Net::CIDR::Lite->new;
 	$ipv6 = Net::CIDR::Lite->new;
 
-	load();
 	$active = 1;
+	load();
 }
 
 

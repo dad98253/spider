@@ -64,7 +64,7 @@ $http_proxy_port = undef;
 # can be changed if necessary.
 #
 
-$qrz_url = 'www.qrz.com';     # used by show/qrz
+$qrz_url = 'xmldata.qrz.com';     # used by show/qrz
 $wm7d_url = 'www.wm7d.net';   # used by show/wm7d
 $db0sdx_url = 'www.qslinfo.de'; # used by show/db0sdx
 $db0sdx_path = '/qslinfo';

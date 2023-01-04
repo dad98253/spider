@@ -301,9 +301,16 @@ sub new_channel
 		}
 
 		# now deal with the lock
+		my $host = $conn->peerhost;
 		if ($lock) {
-			my $host = $conn->peerhost;
 			LogDbg('', "$call on $host is locked out, disconnected");
+			$conn->disconnect;
+			return;
+		}
+
+		# Is he from a badip?
+		if (DXCIDR::find($host)) {
+			LogDbg('', "$call on $host is from a badip $host, disconnected");
 			$conn->disconnect;
 			return;
 		}

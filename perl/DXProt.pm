@@ -1082,7 +1082,7 @@ sub get_hops
 {
 	my $pcno = shift;
 	my $hops = $DXProt::hopcount{$pcno};
-	$hops = $DXProt::def_hopcount if !$hops;
+	$hops = $DXProt::def_hopcount unless $hops;
 	return "H$hops";
 }
 

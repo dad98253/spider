@@ -16,7 +16,7 @@ use DXUtil;
 use DXLog;
 use IO::File;
 use File::Copy;
-use Socket qw(inet_pton inet_ntop);
+use Socket qw(AF_INET AF_INET6 inet_pton inet_ntop);
 
 our $active = 0;
 our $badipfn = "badip";
@@ -128,7 +128,7 @@ sub _sort
 	my @in;
 	my @out;
 	for (@_) {
-		push @in, [inet_pton($_), split m|/|];
+		push @in, [inet_pton(m|:|?AF_INET6:AF_INET, $_), split m|/|];
 	}
 	@out = sort {$a->[0] <=> $b->[0]} @in;
 	return map { "$_->[1]/$_->[2]"} @out;

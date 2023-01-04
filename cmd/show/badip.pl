@@ -14,7 +14,7 @@ my @added;
 my @in = split /\s+/, $line;
 my $maxlth = 0;
 
-$DB::single = 1;
+#$DB::single = 1;
 
 
 my @list = map {my $s = $_; $s =~ s|/32$||; $maxlth = length $s if length $s > $maxlth; $s =~ /^1$/?undef:$s} DXCIDR::list();

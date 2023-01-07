@@ -85,6 +85,8 @@ sub _put
 
 sub add
 {
+	my $count = 0;
+	
 	for my $ip (@_) {
 		# protect against stupid or malicious
 		next if /^127\./;
@@ -95,6 +97,7 @@ sub add
 				next;
 			} 
 			$ipv4->add_any($ip);
+			++$count;
 			++$count4;
 		} elsif (/:/) {
 			if ($ipv6->find($ip)) {
@@ -102,6 +105,7 @@ sub add
 				next;
 			} 
 			$ipv6->add_any($ip);
+			++$count;
 			++$count6;
 			LogDbg('DXProt', "DXCIDR: Added IPV6 $ip address");
 		}
@@ -114,6 +118,7 @@ sub add
 		$ipv6->prep_find;
 		_put($ipv6, 6);
 	}
+	return $count;
 }
 
 sub save

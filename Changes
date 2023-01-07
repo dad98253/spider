@@ -2,6 +2,7 @@
 1. Fillout DXCIDR, attach checks in PC61 and logins. Login that fail will 
    simply disconnect, like locked out callsigns
 2. Fix qrz.com URL in stock Internet.pm.
+3. Fix DXHash issues (baddx, badnode, badspotter etc)
 30Dec22=======================================================================
 1. Add more BadWords (regex) checks.
 01Dec22=======================================================================

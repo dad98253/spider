@@ -16,6 +16,7 @@ use DXUtil;
 use DXLog;
 use IO::File;
 use File::Copy;
+
 use Socket qw(AF_INET AF_INET6 inet_pton inet_ntop);
 
 our $active = 0;
@@ -29,8 +30,7 @@ my $count6 = 0;
 sub load
 {
 	if ($active) {
-		$count4 = _load($ipv4, 4);
-		$count6 = _load($ipv6, 6);
+		_load();
 	}
 	LogDbg('DXProt', "DXCIDR: loaded $count4 IPV4 addresses and $count6 IPV6 addresses");
 	return $count4 + $count6;
@@ -38,49 +38,51 @@ sub load
 
 sub _fn
 {
-	return localdata($badipfn) . ".$_[0]";
+	return localdata($badipfn);
 }
 
 sub _load
 {
-	my $list = shift;
-	my $sort = shift;
-	my $fn = _fn($sort);
+	my $fn = _fn();
 	my $fh = IO::File->new($fn);
 	my $count = 0;
+
+	new();
 	
 	if ($fh) {
 		while (<$fh>) {
 			chomp;
 			next if /^\s*\#/;
 			next unless /[\.:]/;
-			$list->add_any($_);
+			add($_);
 			++$count;
 		}
 		$fh->close;
-		$list->clean if $count;
-		$list->prep_find;
 	} elsif (-r $fn) {
 		LogDbg('err', "DXCIDR: $fn not found ($!)");
 	}
+
+	clean_prep();
+	
 	return $count;
 }
 
 sub _put
 {
-	my $list = shift;
-	my $sort = shift;
-	my $fn = _fn($sort);
+	my $fn = _fn();
 	my $r = rand;
 	my $fh = IO::File->new (">$fn.$r");
+	my $count = 0;
 	if ($fh) {
-		for ($list->list) {
+		for ($ipv4->list, $ipv6->list) {
 			$fh->print("$_\n");
+			++$count;
 		}
 		move "$fn.$r", $fn;
 	} else {
 		LogDbg('err', "DXCIDR: cannot write $fn.$r $!");
 	}
+	return $count;
 }
 
 sub add
@@ -92,40 +94,35 @@ sub add
 		next if /^127\./;
 		next if /^::1$/;
 		if (/\./) {
-			if ($ipv4->find($ip)) {
-				LogDbg('DXProt', "DXCIDR: Ignoring existing IPV4 $ip");
-				next;
-			} 
 			$ipv4->add_any($ip);
 			++$count;
 			++$count4;
 		} elsif (/:/) {
-			if ($ipv6->find($ip)) {
-				LogDbg('DXProt', "DXCIDR: Ignoring existing IPV6 $ip");
-				next;
-			} 
 			$ipv6->add_any($ip);
 			++$count;
 			++$count6;
 			LogDbg('DXProt', "DXCIDR: Added IPV6 $ip address");
 		}
 	}
+	return $count;
+}
+
+sub clean_prep
+{
 	if ($ipv4 && $count4) {
+		$ipv4->clean;
 		$ipv4->prep_find;
-		_put($ipv4, 4);
 	}
 	if ($ipv6 && $count6) {
+		$ipv6->clean;
 		$ipv6->prep_find;
-		_put($ipv6, 6);
 	}
-	return $count;
 }
 
 sub save
 {
 	return 0 unless $active;
-	_put($ipv4, 4) if $count4;
-	_put($ipv6, 6) if $count6;
+	_put() if $count4 || $count6;
 }
 
 sub _sort
@@ -167,14 +164,18 @@ sub init
 	}
 
 	import Net::CIDR::Lite;
-
-	$ipv4 = Net::CIDR::Lite->new;
-	$ipv6 = Net::CIDR::Lite->new;
-
 	$active = 1;
+
+	new();
+
 	load();
 }
 
-
+sub new
+{
+	$ipv4 = Net::CIDR::Lite->new;
+	$ipv6 = Net::CIDR::Lite->new;
+	$count4 = $count6 = 0; 
+}
 
 1;

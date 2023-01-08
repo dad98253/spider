@@ -13,12 +13,20 @@ my @out;
 my @added;
 my @in = split /\s+/, $line;
 return (1, "set/badip: need IP, IP-IP or IP/24") unless @in;
-for (@in) {
-	eval{ DXCIDR::add($_); };
-	return (1, "set/badip: $_ $@") if $@;
-	push @added, $_; 
+for my $ip (@in) {
+	my $r;
+	eval{ $r = DXCIDR::find($ip); };
+	return (1, "set/badip: $ip $@") if $@;
+	if ($r) {
+		push @out, "set/badip: $ip exists, not added";
+		next;
+	}
+	DXCIDR::add($ip);
+	push @added, $ip;
 }
 my $count = @added;
 my $list = join ' ', @in;
-push @out, "set/badip: added $count entries: $list";
+DXCIDR::clean_prep();
+DXCIDR::save();
+push @out, "set/badip: added $count entries: $list" if $count;
 return (1, @out);

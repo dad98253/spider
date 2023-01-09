@@ -161,7 +161,7 @@ sub handle_11
 		}
 	}
 
-	dbg("INPUT PC$pcno $line origin $origin recurse: $recurse") if isdbg("pc11"); 
+	dbg("INPUT PC$pcno $line origin $origin recurse: $recurse") if isdbg("pc11") || isdbg("pc61"); 
 
 #	my ($hops) = $pc->[8] =~ /^H(\d+)/;
 
@@ -196,12 +196,13 @@ sub handle_11
 	}
 
 	# check IP addresses
-	if ($pc->[8] && is_ipaddr($pc->[8])) {
+	if (@$pc > 8 && is_ipaddr($pc->[8])) {
 		my $ip = $pc->[8];
 		$ip =~ s/,/:/g;
 		$ip =~ s/^::ffff://;
 		if (DXCIDR::find($ip)) {
-			dbg("DXProt: Spot ignore $pc->[8] in badip list") if dbg('badip');
+			dbg($line) if isdbg('nologchan');
+			dbg("PCProt: $ip in badip list, dropped");
 			return;
 		}
 	}
@@ -210,6 +211,7 @@ sub handle_11
 	my $d = cltounix($pc->[3], $pc->[4]);
 	# bang out (and don't pass on) if date is invalid or the spot is too old (or too young)
 	if (!$d || (($pcno == 11 || $pcno == 61) && ($d < $main::systime - $pc11_max_age || $d > $main::systime + 900))) {
+		dbg($line) if isdbg('nologchan');
 		dbg("PCPROT: Spot ignored, invalid date or out of range ($pc->[3] $pc->[4])\n");
 		return;
 	}
@@ -217,6 +219,7 @@ sub handle_11
 	# is it 'baddx'
 	if ($baddx->in($pc->[2])) {
 		dbg("PCPROT: Bad DX spot '$pc->[2]', ignored");
+		dbg($line) if isdbg('nologchan');
 		return;
 	}
 
@@ -224,6 +227,7 @@ sub handle_11
 	$pc->[5] =~ s/^\s+//;			# take any leading blanks off
 	$pc->[2] = unpad($pc->[2]);		# take off leading and trailing blanks from spotted callsign
 	if ($pc->[2] =~ /BUST\w*$/) {
+		dbg($line) if isdbg('nologchan');
 		dbg("PCPROT: useless 'BUSTED' spot") if isdbg('chanerr');
 		return;
 	}

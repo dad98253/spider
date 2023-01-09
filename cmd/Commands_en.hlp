@@ -995,6 +995,21 @@ running in order for the changes to take effect.
 Reload the /spider/data/bands.pl file if you have changed it manually whilst
 the cluster is running. 
 
+=== 6^LOAD/BADIP^Reload the bad IP address table
+Reload the badip address file(s) if you have changed any of them  manually
+whilst the cluster is running.
+
+You can edit the badip.* files manually in local_data or (for instance)
+obtain some bad IP addresses from the web to replace badip.base for TOR
+IP addresses (this filename may change).
+
+There is (currently) no UNSET/BADIP command so you will need to edit
+the badip.local file to remove IP addresses.
+
+After modification, you can reload the database with:
+
+  LOAD/BADIP
+
 === 9^LOAD/BADMSG^Reload the bad msg table
 Reload the /spider/msg/badmsg.pl file if you have changed it manually whilst
 the cluster is running. This table contains a number of perl regular 
@@ -1597,6 +1612,13 @@ The word must be written in full, no wild cards are allowed eg:-
 To allow a word again, use the following command ...
 
   unset/baddx VIDEO
+
+=== 6^SET/BADIP <ip address>..^Stop logins and spots with this IP address
+This command will prevent logins to this node from this IP address.
+It will also drop spots (PC61) from this address thus preventing them
+from being propagated.
+
+  set/badip 217.61.58.23
 
 === 6^SET/BADNODE <call>..^Stop spots from this node being propagated
 === 6^UNSET/BADNODE <call>..^Allow spots from this node again

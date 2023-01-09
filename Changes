@@ -1,3 +1,9 @@
+09Jan23=======================================================================
+1. Finish implemention of DXCIDR ip address filtering. This works on both 
+   logins (treated the same as locked out - i.e. just disconnected) and also
+   with PC61s where these sentences are just dropped. Also attempt to prevent
+   any *following* PC11s with the same data getting through. 
+2. Recognise PC18s coming from CC Clusters more nicely.
 04Jan23=======================================================================
 1. Fillout DXCIDR, attach checks in PC61 and logins. Login that fail will 
    simply disconnect, like locked out callsigns

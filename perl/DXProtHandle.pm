@@ -195,17 +195,6 @@ sub handle_11
 		return;
 	}
 
-	# check IP addresses
-	if (@$pc > 8 && is_ipaddr($pc->[8])) {
-		my $ip = $pc->[8];
-		$ip =~ s/,/:/g;
-		$ip =~ s/^::ffff://;
-		if (DXCIDR::find($ip)) {
-			dbg($line) if isdbg('nologchan');
-			dbg("PCProt: $ip in badip list, dropped");
-			return;
-		}
-	}
 
 	# convert the date to a unix date
 	my $d = cltounix($pc->[3], $pc->[4]);
@@ -234,6 +223,20 @@ sub handle_11
 	
 
 	my @spot = Spot::prepare($pc->[1], $pc->[2], $d, $pc->[5], $nossid, $pc->[7], $pc->[8]);
+
+	# check IP addresses
+	if (@$pc > 8 && is_ipaddr($pc->[8])) {
+		my $ip = $pc->[8];
+		$ip =~ s/,/:/g;
+		$ip =~ s/^::ffff://;
+		if (DXCIDR::find($ip)) {
+			dbg($line) if isdbg('nologchan');
+			dbg("PCPROT: $ip in badip list, dropped");
+			# sneakily put it into the dup list to prevent following PC11s also getting through :-)
+			Spot::dup(@spot[0..4,7]);
+			return;
+		}
+	}
 
 	# global spot filtering on INPUT
 	if ($self->{inspotsfilter}) {
@@ -323,7 +326,7 @@ sub handle_11
 			if ($s) {
 				my $action = $senderverify > 1 ? ", DUMPED" : '';
 				$s =~ s/, $//;
-				dbg("PCProt: Suspicious Spot $pc->[2] on $pc->[1] by $pc->[6]($ip)\@$pc->[7] $s$action");
+				dbg("PCPROT: Suspicious Spot $pc->[2] on $pc->[1] by $pc->[6]($ip)\@$pc->[7] $s$action");
 				return unless $senderverify < 2;
 			}
 		}
@@ -758,14 +761,17 @@ sub handle_18
 	my $parent = Route::Node::get($self->{call});
 
 	# record the type and version offered
-	if (my ($version) = $pc->[1] =~ /DXSpider Version: (\d+\.\d+)/) {
-		$self->{version} = 53 + $version;
-		$self->user->version(53 + $version);
-		$parent->version(0 + $version);
+	if (my ($version) = $pc->[1] =~ /(?:DXSpider|CC\s*Cluster)\s+Version: (\d+(?:\.\d+))/) {
+		$version += 0;
+		$version += 53 if $version < 6;
+		$self->{version} = $version;
+		$self->user->version($version);
+		$parent->version($version);
 		my ($build) = $pc->[1] =~ /Build: (\d+(?:\.\d+)?)/;
-		$self->{build} = 0 + $build;
-		$self->user->build(0 + $build);
-		$parent->build(0 + $build);
+		$build += 0;
+		$self->{build} = $build;
+		$self->user->build($build);
+		$parent->build($build);
 		dbg("$self->{call} = DXSpider version $version build $build");
 		unless ($self->is_spider) {
 			dbg("Change U " . $self->user->sort . " C $self->{sort} -> S");
@@ -1691,12 +1697,12 @@ sub _add_thingy
 					my $old = $user->sort;
 					if ($user->is_ak1a && (($version >= 5455 &&  $build > 0) || ($version >= 3000 && $version <= 3500)) ) {
 						$user->sort('S');
-						dbg("PCProt::_add_thingy node $call v: $version b: $build sort ($old) updated to " . $user->sort);
+						dbg("PCPROT::_add_thingy node $call v: $version b: $build sort ($old) updated to " . $user->sort);
 					} elsif ($user->is_spider && ($version < 3000 || ($version > 4000 && $version < 5455))) {
 						unless ($version > 0  && $build == 0) {
 							$user->sort('A');
 							$build ||= 0;
-							dbg("PCProt::_add_thingy node $call v: $version b: $build sort ($old) downgraded to " . $user->sort);
+							dbg("PCPROT::_add_thingy node $call v: $version b: $build sort ($old) downgraded to " . $user->sort);
 						}
 					}
 				}
@@ -2053,23 +2059,23 @@ sub handle_92
 			my $user = check_add_user($parent->call, 'S');
 			my $oldsort = $user->sort // '';
 
-			dbg("PCProt PC92 K v: $version ov: $oldversion b: $build ob: $oldbuild pk: " . ($parent->K || '0') . " uk: " . ($user->K || 0)) if isdbg('pc92k');
+			dbg("PCPROT: PC92 K v: $version ov: $oldversion b: $build ob: $oldbuild pk: " . ($parent->K || '0') . " uk: " . ($user->K || 0)) if isdbg('pc92k');
 				
 			if (is_numeric($version) || is_numeric($build)) {
 				my $changed = 0;
 				if (($oldversion ne $version || $build ne $oldbuild)) {
-					dbg("PCProt PC92 K node $call updated version: $version (was $oldversion) build: $build (was $oldbuild)");
+					dbg("PCPROT: PC92 K node $call updated version: $version (was $oldversion) build: $build (was $oldbuild)");
 					$user->version($parent->version($version));
 					$user->build($parent->build($build));
 					++$changed;
 				}
 				if ($oldsort ne 'S') {
-					dbg("PCProt PC92 K node $call updated sort: $sort (was $oldsort)");
+					dbg("PCPROT: PC92 K node $call updated sort: $sort (was $oldsort)");
 					$user->sort('S');
 					++$changed;
 				}
 				unless ($user->K) {
-					dbg("PCProt PC92 K node $call updated - marked as PC92 K user");
+					dbg("PCPROT: PC92 K node $call updated - marked as PC92 K user");
 					$user->K(1);
 					++$changed;
 				}

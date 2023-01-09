@@ -12,7 +12,7 @@ return (1, $self->msg('e5')) if $self->priv < 6;
 my @out;
 
 my $count = 0;
-eval{ $count += DXCIDR::load(); };
+eval{ $count += DXCIDR::reload(); };
 return (1, "load/badip: $_ $@") if $@;
 
 push @out, "load/badip: added $count entries";

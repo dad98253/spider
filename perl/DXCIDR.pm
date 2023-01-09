@@ -26,50 +26,44 @@ my $ipv6;
 my $count4 = 0;
 my $count6 = 0;
 
-# load the badip file
-sub load
-{
-	if ($active) {
-		_load();
-	}
-	LogDbg('DXProt', "DXCIDR: loaded $count4 IPV4 addresses and $count6 IPV6 addresses");
-	return $count4 + $count6;
-}
-
 sub _fn
 {
 	return localdata($badipfn);
 }
 
-sub _load
+sub _read
 {
+	my $suffix = shift;
 	my $fn = _fn();
+	$fn .= ".$suffix" if $suffix;
 	my $fh = IO::File->new($fn);
-	my $count = 0;
+	my @out;
 
-	new();
-	
 	if ($fh) {
 		while (<$fh>) {
 			chomp;
 			next if /^\s*\#/;
 			next unless /[\.:]/;
-			add($_);
-			++$count;
+			push @out, $_;
 		}
 		$fh->close;
-	} elsif (-r $fn) {
-		LogDbg('err', "DXCIDR: $fn not found ($!)");
+	} else {
+		LogDbg('err', "DXCIDR: $fn read error ($!)");
 	}
+	return @out;
+}
 
-	clean_prep();
-	
-	return $count;
+sub _load
+{
+	my $suffix = shift;
+	my @in = _read($suffix);
+	return scalar add(@in);
 }
 
 sub _put
 {
-	my $fn = _fn();
+	my $suffix = shift;
+	my $fn = _fn() . ".$suffix";
 	my $r = rand;
 	my $fh = IO::File->new (">$fn.$r");
 	my $count = 0;
@@ -79,10 +73,34 @@ sub _put
 			++$count;
 		}
 		move "$fn.$r", $fn;
+		LogDbg('cmd', "DXCIDR: put (re-)written $fn");
 	} else {
 		LogDbg('err', "DXCIDR: cannot write $fn.$r $!");
 	}
 	return $count;
+}
+
+sub append
+{
+	my $suffix = shift;
+	my @in = @_;
+	my @out;
+	
+	if ($suffix) {
+		my $fn = _fn() . ".$suffix";
+		my $r = rand;
+		my $fh = IO::File->new (">>$fn.$r");
+		if ($fh) {
+			print $fh "$_\n" for @in;
+			$fh->close;
+			move "$fn.$r", $fn;
+		} else {
+			LogDbg('err', "DXCIDR::append error appending to $fn.$r $!");
+		}
+	} else {
+		LogDbg('err', "DXCIDR::append require badip suffix");
+	}
+	return scalar @in;
 }
 
 sub add
@@ -91,17 +109,18 @@ sub add
 	
 	for my $ip (@_) {
 		# protect against stupid or malicious
-		next if /^127\./;
-		next if /^::1$/;
-		if (/\./) {
+		next if $ip =~ /^127\./;
+		next if $ip =~ /^::1$/;
+		if ($ip =~ /\./) {
 			$ipv4->add_any($ip);
 			++$count;
 			++$count4;
-		} elsif (/:/) {
+		} elsif ($ip =~ /:/) {
 			$ipv6->add_any($ip);
 			++$count;
 			++$count6;
-			LogDbg('DXProt', "DXCIDR: Added IPV6 $ip address");
+		} else {
+			LogDbg('err', "DXCIDR::add non-ip address '$ip' read");
 		}
 	}
 	return $count;
@@ -117,12 +136,6 @@ sub clean_prep
 		$ipv6->clean;
 		$ipv6->prep_find;
 	}
-}
-
-sub save
-{
-	return 0 unless $active;
-	_put() if $count4 || $count6;
 }
 
 sub _sort
@@ -166,9 +179,35 @@ sub init
 	import Net::CIDR::Lite;
 	$active = 1;
 
+	my $fn = _fn();
+	if (-e $fn) {
+		move $fn, "$fn.base";
+	}
+
+	_touch("$fn.local");
+	
+	reload();
+
+}
+
+sub _touch
+{
+	my $fn = shift;
+	my $now = time;
+	local (*TMP);
+	utime ($now, $now, $fn) || open (TMP, ">>$fn") || LogDbg('err', "DXCIDR::touch: Couldn't touch $fn: $!");
+}
+
+sub reload
+{
 	new();
 
-	load();
+	my $count = _load('base');
+	$count += _load('local');
+
+	LogDbg('DXProt', "DXCIDR::reload $count ip addresses found (IPV4: $count4 IPV6: $count6)" );
+
+	return $count;
 }
 
 sub new

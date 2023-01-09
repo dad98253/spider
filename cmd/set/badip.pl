@@ -12,7 +12,11 @@ return (1, $self->msg('e5')) if $self->priv < 6;
 my @out;
 my @added;
 my @in = split /\s+/, $line;
-return (1, "set/badip: need IP, IP-IP or IP/24") unless @in;
+my $suffix = 'local';
+if ($in[0] =~ /^[_\d\w]+$/) {
+	$suffix = shift @in;
+}
+return (1, "set/badip: need [suffix (def: local])] IP, IP-IP or IP/24") unless @in;
 for my $ip (@in) {
 	my $r;
 	eval{ $r = DXCIDR::find($ip); };
@@ -21,12 +25,12 @@ for my $ip (@in) {
 		push @out, "set/badip: $ip exists, not added";
 		next;
 	}
-	DXCIDR::add($ip);
+	DXCIDR::add($suffix, $ip);
 	push @added, $ip;
 }
 my $count = @added;
 my $list = join ' ', @in;
 DXCIDR::clean_prep();
-DXCIDR::save();
-push @out, "set/badip: added $count entries: $list" if $count;
+DXCIDR::append($suffix, @added);
+push @out, "set/badip: added $count entries to badip.$suffix : $list" if $count;
 return (1, @out);

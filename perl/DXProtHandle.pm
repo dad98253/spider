@@ -107,7 +107,7 @@ sub handle_10
 		return;
 	}
 
-	# if this is a 'bad spotter' user then ignore it
+
 	my $nossid = $from;
 	$nossid =~ s/-\d+$//;
 	if ($badspotter->in($nossid)) {
@@ -186,16 +186,6 @@ sub handle_11
 		return;
 	}
 
-	# if this is a 'bad spotter' or an unknown user then ignore it. BUT if it's got an IP address then allow it through
-	my $nossid = $pc->[6];
-	$nossid =~ s/-\d+$//;
-	if ($badspotter->in($nossid)) {
-		dbg($line) if isdbg('nologchan');
-		dbg("PCPROT: Bad Spotter $pc->[6], dropped");
-		return;
-	}
-
-
 	# convert the date to a unix date
 	my $d = cltounix($pc->[3], $pc->[4]);
 	# bang out (and don't pass on) if date is invalid or the spot is too old (or too young)
@@ -221,6 +211,8 @@ sub handle_11
 		return;
 	}
 	
+	my $nossid = $pc->[6];
+    $nossid =~ s/-\d+$//;
 
 	my @spot = Spot::prepare($pc->[1], $pc->[2], $d, $pc->[5], $nossid, $pc->[7], $pc->[8]);
 
@@ -238,6 +230,13 @@ sub handle_11
 		}
 	}
 
+	# is this is a 'bad spotter' or an unknown user then ignore it. 
+	if ($badspotter->in($nossid)) {
+		dbg($line) if isdbg('nologchan');
+		dbg("PCPROT: Bad Spotter $pc->[6], dropped");
+		return;
+	}
+
 	# global spot filtering on INPUT
 	if ($self->{inspotsfilter}) {
 		my ($filter, $hops) = $self->{inspotsfilter}->it(@spot);
@@ -246,6 +245,7 @@ sub handle_11
 			return;
 		}
 	}
+
 
 	# this is where we decide to delay PC11s in the hope that a PC61 will be along soon.
 	

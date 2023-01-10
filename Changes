@@ -1,8 +1,28 @@
+10Jan23=======================================================================
+1. Add baddx on incoming callsign in RBN.
+2. Search for all /spider/local_data/badip.* files to allow more control on
+   which IP addresses are detected. e.g. badip.torexit, badip.torrelay as well
+   as baddx.local. The suffixes, apart from .local (created by set/badip) are
+   completely arbitrary. You can use whichever suffix name you like. This is
+   a more useful arrangement for the ever increasing sources of "bad ip
+   addresses" that we need to deter.  
+
+   NOTE: all badip.<suffix> are read only EXCEPT badip.local (which can be
+   altered in real time by the sysop using set/badip <ip address> ...). 
+   If one uses periodic crontab jobs to update any other badip.<suffix>
+   files from web resources then don't forget to 'load/badip' afterwards. 
+3. Add a /spider/data/baddx.issue file which can be copied to (or used as a 
+   basis to create) /spider/local_data/baddx
 09Jan23=======================================================================
 1. Finish implemention of DXCIDR ip address filtering. This works on both 
    logins (treated the same as locked out - i.e. just disconnected) and also
    with PC61s where these sentences are just dropped. Also attempt to prevent
    any *following* PC11s with the same data getting through. 
+
+   YOU WILL NEED either 'cpanm Net::CIDR::Lite' or debian/ubuntu based distros 
+   'apt install libnet-cidr-lite-perl'. RedHat based systems will have similar
+   packages available.
+
 2. Recognise PC18s coming from CC Clusters more nicely.
 04Jan23=======================================================================
 1. Fillout DXCIDR, attach checks in PC61 and logins. Login that fail will 

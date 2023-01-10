@@ -259,6 +259,14 @@ sub normal
 		return;
 	}
 
+	# is it 'baddx'
+	if ($DXProt::baddx->in($call)) {
+		dbg("RBN: Bad DX spot '$call', ignored");
+		dbg($line) if isdbg('nologchan');
+		return;
+	}
+
+	
 	# remove all extraneous crap from the origin - just leave the base callsign
 	my $norigin = basecall($origin);
 	unless ($norigin) {

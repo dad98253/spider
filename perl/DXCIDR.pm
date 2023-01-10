@@ -202,10 +202,23 @@ sub reload
 {
 	new();
 
-	my $count = _load('base');
-	$count += _load('local');
+	my $count = 0;
+	my $files = 0;
 
-	LogDbg('DXProt', "DXCIDR::reload $count ip addresses found (IPV4: $count4 IPV6: $count6)" );
+	LogDbg('DXProt', "DXCIDR::reload reload database" );
+
+	my $dir;
+	opendir($dir, $main::local_data);
+	while (my $fn = readdir $dir) {
+		next unless my ($suffix) = $fn =~ /^badip\.(\w+)$/;
+		my $c = _load($suffix);
+		LogDbg('DXProt', "DXCIDR::reload: $fn read containing $c ip addresses" );
+		$count += $c;
+		$files++;
+	}
+	closedir $dir;
+	
+	LogDbg('DXProt', "DXCIDR::reload $count ip addresses found (IPV4: $count4 IPV6: $count6) in $files badip files" );
 
 	return $count;
 }

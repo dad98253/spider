@@ -144,7 +144,9 @@ my $last;
 my $pc11_saved;
 my $pc11_saved_time;
 my $pc11_rx;
+my $rpc11_to_61;
 my $pc11_to_61;
+my $pc61_rx;
 
 # DX Spot handling
 sub handle_11
@@ -270,10 +272,13 @@ sub handle_11
 
 	unless ($recurse) {
 		if ($pcno == 61) {
+			++$pc61_rx;
+
 			if ($pc11_saved) {
 				if ($key eq $pc11_saved->[0]) {
 					++$pc11_to_61;
-					dbg("recurse: $recurse saved PC11 spot $key dumped, better pc61 received pc11: $pc11_rx -> pc61 $pc11_to_61 ") if isdbg("pc11");
+					my $percent = int($pc11_to_61 * 100 / $pc11_rx);
+					dbg("recurse: $recurse saved PC11 spot $key dumped, better pc61 received ($percent\%) pc61: $pc61_rx pc11: $pc11_rx -> pc61: $pc11_to_61 ") if isdbg("pc11");
 					undef $pc11_saved;
 				}
 			} 
@@ -294,8 +299,9 @@ sub handle_11
 			if ($r && $r->ip) {	                # do we have an ip addres
 				$pcno = 61;						# now turn this into a PC61
 				$spot[14] = $r->ip;
-				++$pc11_to_61;
-				dbg("recurse: $recurse PC11 spot $key promoted to pc61 ip $spot[14] pc11: $pc11_rx -> pc61 $pc11_to_61") if isdbg("pc11");
+				++$rpc11_to_61;
+				my $percent = int($rpc11_to_61 * 100 / $pc11_rx);
+				dbg("recurse: $recurse PC11 spot $key promoted to pc61 ($percent\%) ip $spot[14] pc61: $pc61_rx pc11: $pc11_rx -> pc61 $pc11_to_61") if isdbg("pc11");
 				undef $pc11_saved;
 			}
 
@@ -316,7 +322,7 @@ sub handle_11
 			}
 			
 		} else {
-			dbg("recurse: $recurse PC61 spot $key passed onward") if isdbg("pc11");
+			dbg("recurse: $recurse PC61 spot $key passed onward pc61: $pc61_rx pc11: $pc11_rx -> pc61 $pc11_to_61") if isdbg("pc11");
 			$recurse = 0;
 			undef $pc11_saved;
 		}

@@ -267,7 +267,7 @@ sub handle_11
 				if ($key eq $pc11_saved->[0]) {
 					++$pc11_to_61;
 					my $percent = $pc11_rx ? $pc11_to_61 * 100 / $pc11_rx : 0;
-					dbg(sprintf("recurse: $recurse saved PC11 spot $key dumped, better pc61 received pc61: $pc61_rx pc11: $pc11_rx -> pc61: $pc11_to_61 (%0.1f\%)", $percent)) if isdbg("pc11");
+					dbg(sprintf("recurse: $recurse saved PC11 spot $key dumped, better pc61 received pc61: $pc61_rx pc11: $pc11_rx -> pc61: $pc11_to_61 (%0.1f%%)", $percent)) if isdbg("pc11");
 					undef $pc11_saved;
 				}
 			} 
@@ -277,7 +277,7 @@ sub handle_11
 			++$pc11_rx;
 			
 			if ($pc11_saved) {
-				if ($key eq $pc11_saved->[0]) {
+				if ($key eq $pc11_saved->[0] ) {
 					dbg("recurse: $recurse saved PC11 spot $key, dupe pc11 received and dumped") if isdbg("pc11");
 					return;		# because it's a dup
 				}
@@ -290,7 +290,7 @@ sub handle_11
 				$spot[14] = $r->ip;
 				++$rpc11_to_61;
 				my $percent = $pc11_rx ? $rpc11_to_61 * 100 / $pc11_rx : 0;
-				dbg(sprintf("recurse: $recurse PC11 spot $key promoted to pc61 ip $spot[14] pc61: $pc61_rx pc11: $pc11_rx -> pc61 $pc11_to_61 (%0.1f\%)", $percent)) if isdbg("pc11");
+				dbg(sprintf("recurse: $recurse PC11 spot $key promoted to pc61 ip $spot[14] pc61: $pc61_rx pc11: $pc11_rx -> pc61 $pc11_to_61 (%0.1f%%)", $percent)) if isdbg("pc11");
 				undef $pc11_saved;
 			}
 
@@ -313,7 +313,7 @@ sub handle_11
 		} else {
 			my $count =  $pc11_to_61+$rpc11_to_61;
 			my $percent = $pc11_rx ? $count*100 / $pc11_rx : 0;
-			dbg(sprintf("recurse: $recurse PC61 spot $key passed onward pc61: $pc61_rx pc11: $pc11_rx -> pc61: $count (%0.1f\%)", $percent)) if isdbg("pc11");
+			dbg(sprintf("recurse: $recurse PC61 spot $key passed onward pc61: $pc61_rx pc11: $pc11_rx -> pc61: $count (%0.1f%%)", $percent)) if isdbg("pc11");
 			$recurse = 0;
 			undef $pc11_saved;
 		}

@@ -802,7 +802,7 @@ sub handle_18
 	my $parent = Route::Node::get($self->{call});
 
 	# record the type and version offered
-	if (my ($version) = $pc->[1] =~ /(?:DXSpider|CC\s*Cluster)\s+Version: (\d+(?:\.\d+))/) {
+	if (my ($software, $version) = $pc->[1] =~ /(DXSpider|CC\s*Cluster)\s+Version: (\d+(?:\.\d+)?)/i) {
 		$version += 0;
 		$version += 53 if $version < 6;
 		$self->{version} = $version;
@@ -813,7 +813,7 @@ sub handle_18
 		$self->{build} = $build;
 		$self->user->build($build);
 		$parent->build($build);
-		dbg("$self->{call} = DXSpider version $version build $build");
+		dbg("$self->{call} = $software version $version build $build");
 		unless ($self->is_spider) {
 			dbg("Change U " . $self->user->sort . " C $self->{sort} -> S");
 			$self->user->sort('S');
@@ -828,7 +828,7 @@ sub handle_18
 		$self->user->version($self->version);
 	}
 
-	if ($pc->[1] =~ /\bpc9x/) {
+	if ($pc->[1] =~ /CC\*Cluster/i || $pc->[1] =~ /\bpc9x/i) {
 		if ($self->{isolate}) {
 			dbg("$self->{call} pc9x recognised, but node is isolated, using old protocol");
 		} elsif (!$self->user->wantpc9x) {
@@ -1029,7 +1029,7 @@ sub handle_20
 	my $origin = shift;
 	my $pc = shift;
 
-	if ($self->{do_pc9x} && $self->{state} ne 'init92') {
+	if ($self->{do_pc9x} && $self->{state} ne 'init92' && $self->{state} ne 'normal') {
 		$self->send("Reseting to oldstyle routing because login call not sent in any pc92");
 		$self->{do_pc9x} = 0;
 	}
@@ -1123,7 +1123,7 @@ sub handle_22
 	my $pc = shift;
 
 	if ($self->{do_pc9x}) {
-		if ($self->{state} ne 'init92') {
+		if ($self->{state} ne 'init92' && $self->{state} ne 'normal') {
 			$self->send("Reseting to oldstyle routing because login call not sent in any pc92");
 			$self->{do_pc9x} = 0;
 		}

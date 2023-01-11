@@ -301,7 +301,7 @@ sub handle_11
 				$spot[14] = $r->ip;
 				++$rpc11_to_61;
 				my $percent = int($rpc11_to_61 * 100 / $pc11_rx);
-				dbg("recurse: $recurse PC11 spot $key promoted to pc61 ($percent\%) ip $spot[14] pc61: $pc61_rx pc11: $pc11_rx -> pc61 $pc11_to_61") if isdbg("pc11");
+				dbg("recurse: $recurse PC11 spot $key promoted to pc61 ip $spot[14] ($percent\%) pc61: $pc61_rx pc11: $pc11_rx -> pc61 $pc11_to_61") if isdbg("pc11");
 				undef $pc11_saved;
 			}
 
@@ -322,7 +322,9 @@ sub handle_11
 			}
 			
 		} else {
-			dbg("recurse: $recurse PC61 spot $key passed onward pc61: $pc61_rx pc11: $pc11_rx -> pc61 $pc11_to_61") if isdbg("pc11");
+			my $count =  $pc11_to_61+$rpc11_to_61+0;
+			my $percent = $pc11_rx ? int($count / $pc11_rx) : 0;
+			dbg("recurse: $recurse PC61 spot $key passed onward pc61: $pc61_rx pc11: $pc11_rx -> pc61: $count ($percent\%)") if isdbg("pc11");
 			$recurse = 0;
 			undef $pc11_saved;
 		}

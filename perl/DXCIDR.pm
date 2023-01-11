@@ -88,14 +88,13 @@ sub append
 	
 	if ($suffix) {
 		my $fn = _fn() . ".$suffix";
-		my $r = rand;
-		my $fh = IO::File->new (">>$fn.$r");
-		if ($fh) {
+		my $fh = IO::File->new;
+		if ($fh->open("$fn", "a+")) {
+			$fh->seek(0, 2);  	# belt and braces !!
 			print $fh "$_\n" for @in;
 			$fh->close;
-			move "$fn.$r", $fn;
 		} else {
-			LogDbg('err', "DXCIDR::append error appending to $fn.$r $!");
+			LogDbg('err', "DXCIDR::append error appending to $fn $!");
 		}
 	} else {
 		LogDbg('err', "DXCIDR::append require badip suffix");

@@ -31,6 +31,7 @@ for my $ip (@in) {
 my $count = @added;
 my $list = join ' ', @in;
 DXCIDR::clean_prep();
+#$DB::single = 1;
 DXCIDR::append($suffix, @added);
 push @out, "set/badip: added $count entries to badip.$suffix : $list" if $count;
 return (1, @out);

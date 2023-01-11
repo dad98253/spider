@@ -254,17 +254,6 @@ sub handle_11
 		}
 	}
 
-	# we check IP addresses for PC61
-	if (@$pc > 8 && is_ipaddr($pc->[8])) {
-		my $ip = $pc->[8];
-		$ip =~ s/,/:/g;
-		$ip =~ s/^::ffff://;
-		if (DXCIDR::find($ip)) {
-			dbg($line) if isdbg('nologchan');
-			dbg("PCPROT: $ip in badip list, dropped");
-			return;
-		}
-	}
 
 	# this is where we decide to delay PC11s in the hope that a PC61 will be along soon.
 	
@@ -277,8 +266,8 @@ sub handle_11
 			if ($pc11_saved) {
 				if ($key eq $pc11_saved->[0]) {
 					++$pc11_to_61;
-					my $percent = int($pc11_to_61 * 100 / $pc11_rx);
-					dbg("recurse: $recurse saved PC11 spot $key dumped, better pc61 received ($percent\%) pc61: $pc61_rx pc11: $pc11_rx -> pc61: $pc11_to_61 ") if isdbg("pc11");
+					my $percent = $pc11_rx ? $pc11_to_61 * 100 / $pc11_rx : 0;
+					dbg(sprintf("recurse: $recurse saved PC11 spot $key dumped, better pc61 received pc61: $pc61_rx pc11: $pc11_rx -> pc61: $pc11_to_61 (%0.1f\%)", $percent)) if isdbg("pc11");
 					undef $pc11_saved;
 				}
 			} 
@@ -300,8 +289,8 @@ sub handle_11
 				$pcno = 61;						# now turn this into a PC61
 				$spot[14] = $r->ip;
 				++$rpc11_to_61;
-				my $percent = int($rpc11_to_61 * 100 / $pc11_rx);
-				dbg("recurse: $recurse PC11 spot $key promoted to pc61 ip $spot[14] ($percent\%) pc61: $pc61_rx pc11: $pc11_rx -> pc61 $pc11_to_61") if isdbg("pc11");
+				my $percent = $pc11_rx ? $rpc11_to_61 * 100 / $pc11_rx : 0;
+				dbg(sprintf("recurse: $recurse PC11 spot $key promoted to pc61 ip $spot[14] pc61: $pc61_rx pc11: $pc11_rx -> pc61 $pc11_to_61 (%0.1f\%)", $percent)) if isdbg("pc11");
 				undef $pc11_saved;
 			}
 
@@ -322,15 +311,14 @@ sub handle_11
 			}
 			
 		} else {
-			my $count =  $pc11_to_61+$rpc11_to_61+0;
-			my $percent = $pc11_rx ? int($count / $pc11_rx) : 0;
-			dbg("recurse: $recurse PC61 spot $key passed onward pc61: $pc61_rx pc11: $pc11_rx -> pc61: $count ($percent\%)") if isdbg("pc11");
+			my $count =  $pc11_to_61+$rpc11_to_61;
+			my $percent = $pc11_rx ? $count*100 / $pc11_rx : 0;
+			dbg(sprintf("recurse: $recurse PC61 spot $key passed onward pc61: $pc61_rx pc11: $pc11_rx -> pc61: $count (%0.1f\%)", $percent)) if isdbg("pc11");
 			$recurse = 0;
 			undef $pc11_saved;
 		}
 	}
 	
-
 	
 	# this goes after the input filtering, but before the add
 	# so that if it is input filtered, it isn't added to the dup
@@ -338,6 +326,18 @@ sub handle_11
 	if (Spot::dup(@spot[0..4,7])) {
 		dbg("PCPROT: Duplicate Spot $pc->[0] $key ignored\n") if isdbg('chanerr') || isdbg('dupespot');
 		return;
+	}
+
+	# we check IP addresses for PC61 - this will also dedupe PC11 copies
+	if (@$pc > 8 && is_ipaddr($pc->[8])) {
+		my $ip = $pc->[8];
+		$ip =~ s/,/:/g;
+		$ip =~ s/^::ffff://;
+		if (DXCIDR::find($ip)) {
+			dbg($line) if isdbg('nologchan');
+			dbg("PCPROT: $ip in badip list, dropped");
+			return;
+		}
 	}
 
 	

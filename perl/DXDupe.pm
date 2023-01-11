@@ -54,11 +54,13 @@ sub add
 	my $s = shift;
 	my $t = shift || $main::systime + $default;
 	$d{$s} = $t;
+	dbg(sprintf("DXDupe::add key: $s time: %s", ztime($t))) if isdbg('dxdupe');
 }
 
 sub del
 {
 	my $s = shift;
+	dbg(sprintf("DXDupe::del key: $s time: %s", ztime($d{$s}))) if isdbg('dxdupe');
 	delete $d{$s};
 }
 
@@ -70,7 +72,7 @@ sub process
 		while (($k, $v) = each %d) {
 			push @del, $k  if $main::systime >= $v;
 		}
-		delete $d{$_} for @del;
+		del($k) for @del;
 		$lasttime = $main::systime;
 	}
 }

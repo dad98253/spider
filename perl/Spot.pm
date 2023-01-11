@@ -476,12 +476,12 @@ sub formatl
 # enter the spot for dup checking and return true if it is already a dup
 sub dup
 {
-	my ($freq, $call, $d, $text, $by, $node) = @_; 
+	my ($freq, $call, $d, $text, $by, $node, $just_find) = @_; 
 
 	# dump if too old
 	return 2 if $d < $main::systime - $dupage;
-	
-	# turn the time into minutes (should be already but...)
+
+		# turn the time into minutes (should be already but...)
 	$d = int ($d / 60);
 	$d *= 60;
 
@@ -502,19 +502,25 @@ sub dup
 	$text =~ s/[\W\x00-\x2F\x7B-\xFF]//g; # tautology, just to make quite sure!
 	$text = substr($text, 0, $duplth) if length $text > $duplth; 
 	my $ldupkey = "X$|$call|$by|$node|$freq|$d|$text";
+
 	my $t = DXDupe::find($ldupkey);
 	return 1 if $t && $t - $main::systime > 0;
 	
-	DXDupe::add($ldupkey, $main::systime+$dupage);
+	DXDupe::add($ldupkey, $main::systime+$dupage) unless $just_find;
 	$otext = substr($otext, 0, $duplth) if length $otext > $duplth; 
 	$otext =~ s/\s+$//;
 	if (length $otext && $otext ne $text) {
 		$ldupkey = "X$freq|$call|$by|$otext";
 		$t = DXDupe::find($ldupkey);
 		return 1 if $t && $t - $main::systime > 0;
-		DXDupe::add($ldupkey, $main::systime+$dupage);
+		DXDupe::add($ldupkey, $main::systime+$dupage) unless $just_find;
 	}
 	return undef;
+}
+
+sub dup_find
+{
+	return dup(@_, 1);
 }
 
 sub listdups

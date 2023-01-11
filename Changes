@@ -1,3 +1,8 @@
+11Jan23=======================================================================
+1. Improve (?) the PC11 -> PC61 upgrading process that delays incoming PC11s
+   for a very short time in the hope that a PC61 will come in to be used 
+   instead. It will also upgrade a PC11 if we have an uptodate IP address 
+   that has come in from the routing system PC92s. 
 10Jan23=======================================================================
 1. Add baddx on incoming callsign in RBN.
 2. Search for all /spider/local_data/badip.* files to allow more control on

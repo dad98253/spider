@@ -46,7 +46,7 @@ use vars qw($pc11_max_age $pc23_max_age $last_pc50 $eph_restime $eph_info_restim
 			$eph_pc15_restime $pc9x_past_age $pc9x_dupe_age
 			$pc10_dupe_age $pc92_slug_changes $last_pc92_slug
 			$pc92Ain $pc92Cin $pc92Din $pc92Kin $pc9x_time_tolerance
-			$pc92filterdef $senderverify
+			$pc92filterdef $senderverify $pc11_dwell_time
 		   );
 
 $pc9x_dupe_age = 60;			# catch loops of circular (usually) D records
@@ -59,6 +59,7 @@ $pc9x_time_tolerance;           # thing a node might send - once an hour and we 
                                 # this is actually the partition between "yesterday" and "today" but old.
 $senderverify = 0;				# 1 - check for forged PC11 or PC61.
                                 # 2 - if forged, dump them.
+$pc11_dwell_time = 1;			# number of seconds to wait for a PC61 to come to substitute the PC11
 
 
 $pc92filterdef = bless ([
@@ -142,6 +143,8 @@ sub handle_10
 my $last;
 my $pc11_saved;
 my $pc11_saved_time;
+my $pc11_rx;
+my $pc11_to_61;
 
 # DX Spot handling
 sub handle_11
@@ -202,7 +205,7 @@ sub handle_11
 		return;
 	}
 
-	# do some de-duping
+	# is it claiming to be BUST(ed)
 	$pc->[5] =~ s/^\s+//;			# take any leading blanks off
 	$pc->[2] = unpad($pc->[2]);		# take off leading and trailing blanks from spotted callsign
 	if ($pc->[2] =~ /BUST\w*$/) {
@@ -216,19 +219,22 @@ sub handle_11
 
 	my @spot = Spot::prepare($pc->[1], $pc->[2], $d, $pc->[5], $nossid, $pc->[7], $pc->[8]);
 
-	# check IP addresses
-	if (@$pc > 8 && is_ipaddr($pc->[8])) {
-		my $ip = $pc->[8];
-		$ip =~ s/,/:/g;
-		$ip =~ s/^::ffff://;
-		if (DXCIDR::find($ip)) {
-			dbg($line) if isdbg('nologchan');
-			dbg("PCPROT: $ip in badip list, dropped");
-			# sneakily put it into the dup list to prevent following PC11s also getting through :-)
-			Spot::dup(@spot[0..4,7]);
-			return;
-		}
-	}
+	#   $f0 = frequency
+	#   $f1 = call
+	#   $f2 = date in unix format
+	#   $f3 = comment
+	#   $f4 = spotter
+	#   $f5 = spotted dxcc country
+	#   $f6 = spotter dxcc country
+	#   $f7 = origin
+	#   $f8 = spotted itu
+	#   $f9 = spotted cq zone
+	#   $f10 = spotter itu
+	#   $f11 = spotter cq zone
+	#   $f12 = spotted us state
+	#   $f13 = spotter us state
+	#   $f14 = ip address
+
 
 	# is this is a 'bad spotter' or an unknown user then ignore it. 
 	if ($badspotter->in($nossid)) {
@@ -246,23 +252,39 @@ sub handle_11
 		}
 	}
 
+	# we check IP addresses for PC61
+	if (@$pc > 8 && is_ipaddr($pc->[8])) {
+		my $ip = $pc->[8];
+		$ip =~ s/,/:/g;
+		$ip =~ s/^::ffff://;
+		if (DXCIDR::find($ip)) {
+			dbg($line) if isdbg('nologchan');
+			dbg("PCPROT: $ip in badip list, dropped");
+			return;
+		}
+	}
 
 	# this is where we decide to delay PC11s in the hope that a PC61 will be along soon.
 	
 	my $key = join '|', @spot[0..2,4,7]; # not including text
+
 	unless ($recurse) {
 		if ($pcno == 61) {
 			if ($pc11_saved) {
 				if ($key eq $pc11_saved->[0]) {
-					dbg("saved PC11 spot $key dumped, better pc61 received") if isdbg("pc11");
+					++$pc11_to_61;
+					dbg("recurse: $recurse saved PC11 spot $key dumped, better pc61 received pc11: $pc11_rx -> pc61 $pc11_to_61 ") if isdbg("pc11");
 					undef $pc11_saved;
 				}
 			} 
 		}
 		if ($pcno == 11) {
+
+			++$pc11_rx;
+			
 			if ($pc11_saved) {
 				if ($key eq $pc11_saved->[0]) {
-					dbg("saved PC11 spot $key, dupe pc11 received and dumped") if isdbg("pc11");
+					dbg("recurse: $recurse saved PC11 spot $key, dupe pc11 received and dumped") if isdbg("pc11");
 					return;		# because it's a dup
 				}
 			}
@@ -272,30 +294,34 @@ sub handle_11
 			if ($r && $r->ip) {	                # do we have an ip addres
 				$pcno = 61;						# now turn this into a PC61
 				$spot[14] = $r->ip;
-				dbg("PC11 spot $key promoted to pc61 ip $spot[14]") if isdbg("pc11");
+				++$pc11_to_61;
+				dbg("recurse: $recurse PC11 spot $key promoted to pc61 ip $spot[14] pc11: $pc11_rx -> pc61 $pc11_to_61") if isdbg("pc11");
 				undef $pc11_saved;
 			}
-		}
 
-		if ($pc11_saved && $key ne $pc11_saved) {
-			dbg("saved PC11 spot $pc11_saved->[0] ne new key $key, recursing") if isdbg("pc11");
-			shift @$pc11_saved;	# saved key
-			my $self = shift @$pc11_saved;
-			my @saved = @$pc11_saved;
-			undef $pc11_saved;
-			$self->handle_11(@saved, 1);
-		}
-
-		# if we are still a PC11, save it for a better offer
-		if ($pcno == 11) {
-			$pc11_saved = [$key, $self, $pcno, $line, $origin, $pc];
-			$pc11_saved_time = $main::systime;
-			dbg("saved new PC11 spot $key for a better offer") if isdbg("pc11");
-			return;
+			# if it is STILL (despite all efforts to change it)  a PC11
+			if ($pcno == 11) {
+				if ($pc11_saved && $key ne $pc11_saved->[0]) {
+					dbg("recurse: $recurse NEW PC11 spot $key ne $pc11_saved->[0], recursing") if isdbg("pc11");
+					# shift @$pc11_saved;	# saved key
+					my $self = $pc11_saved->[1];
+					my @saved = @$pc11_saved[2..5];
+					$self->handle_11(@saved, 1);
+				}
+				
+				$pc11_saved = [$key, $self, $pcno, $line, $origin, $pc];
+				$pc11_saved_time = $main::systime;
+				dbg("recurse: $recurse saved new PC11 spot $key for a better offer") if isdbg("pc11");
+				return;
+			}
+			
 		} else {
-			dbg("PC61 spot $key passed onward") if isdbg("pc11");
+			dbg("recurse: $recurse PC61 spot $key passed onward") if isdbg("pc11");
+			$recurse = 0;
+			undef $pc11_saved;
 		}
 	}
+	
 
 	
 	# this goes after the input filtering, but before the add
@@ -305,6 +331,7 @@ sub handle_11
 		dbg("PCPROT: Duplicate Spot $pc->[0] $key ignored\n") if isdbg('chanerr') || isdbg('dupespot');
 		return;
 	}
+
 	
 	# here we verify the spotter is currently connected to the node it says it is one. AKA email sender verify
 	# but without the explicit probe to the node. We are relying on "historical" information, but it very likely
@@ -332,8 +359,8 @@ sub handle_11
 		}
 	}
 
-# we until here to do any censorship to try and reduce the amount of noise that repeated copies
-# from other connected nodes cause
+	# we until here to do any censorship to try and reduce the amount of noise that repeated copies
+	# from other connected nodes cause
 	if ($censorpc) {
 		my @bad;
 		if (@bad = BadWords::check($pc->[5])) {
@@ -344,9 +371,6 @@ sub handle_11
 		}
 	}
 
-	# If is a new PC11, store it, releasing the one that is there (if any),
-	# if a PC61 comes along then dump the stored PC11
-	# If there is a different PC11 stored, release that one and store this PC11 instead,
 	
 	# add it
 	Spot::add(@spot);
@@ -417,6 +441,15 @@ sub handle_11
 		}
 	}
 
+	# cancel any recursion as we have now processed it
+	if ($recurse) {
+		if ($pc11_saved && $key eq $pc11_saved->[0]) {
+			dbg("recurse: $recurse key: $key saved_key: $pc11_saved->[0] removed") if isdbg('pc11');
+			undef $pc11_saved;
+		}
+		$recurse = 0;
+	}
+
 	# local processing
 	if (defined &Local::spot) {
 		my $r;
@@ -431,12 +464,14 @@ sub handle_11
 
 	# send out the filtered spots
 	send_dx_spot($self, $line, @spot) if @spot;
+
+	
 }
 
 # used to kick outstanding PC11 if required
 sub pc11_process
 {
-	if ($pc11_saved && $main::systime > $pc11_saved_time) {
+	if ($pc11_saved && $main::systime > $pc11_saved_time + $pc11_dwell_time) {
 		dbg("saved PC11 spot $pc11_saved->[0] timed out waiting, recursing") if isdbg("pc11");
 		shift @$pc11_saved;	# saved key
 		my $self = shift @$pc11_saved;

@@ -2,7 +2,25 @@
 1. Improve (?) the PC11 -> PC61 upgrading process that delays incoming PC11s
    for a very short time in the hope that a PC61 will come in to be used 
    instead. It will also upgrade a PC11 if we have an uptodate IP address 
-   that has come in from the routing system PC92s. 
+   that has come in from the routing system PC92s. do a 'set/debug pc11' to 
+   see it in action.   
+2. I have chosen a definitive list of TOR exits and relays which can be 
+   downloaded from http://www.dxspider.net/download/badip.torexit,
+   http://www.dxspider.net/download/badip.torrelay and finally, for those IP
+   addresses that are deemed to be 'bad':
+   http://www.dxspider.net/download/badip.global. I have added the following 
+   lines to my /spider/local_cmd/crontab:
+
+24 * * * * spawn('cd /spider/local_data; wget http://www.dxspider.net/download/badip.torexit')
+24 * * * * spawn('cd /spider/local_data; wget http://www.dxspider.net/download/badip.torrelay')
+24 * * * * spawn('cd /spider/local_data; wget http://www.dxspider.net/download/badip.global')
+25 * * * * run_cmd('load/badip')
+
+   The tor files are downloaded from https://lists.fissionrelays.net/tor/ at 
+   23 minutes pass every hour, please would you use some other minute than
+   23 or 24 to get your own local copies. 
+
+   A 'set/debug badip' will show you what is being blocked. 
 10Jan23=======================================================================
 1. Add baddx on incoming callsign in RBN.
 2. Search for all /spider/local_data/badip.* files to allow more control on

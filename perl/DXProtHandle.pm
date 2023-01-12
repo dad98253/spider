@@ -62,7 +62,7 @@ $pc9x_time_tolerance;           # thing a node might send - once an hour and we 
                                 # this is actually the partition between "yesterday" and "today" but old.
 $senderverify = 0;				# 1 - check for forged PC11 or PC61.
                                 # 2 - if forged, dump them.
-$pc11_dwell_time = 1;			# number of seconds to wait for a PC61 to come to substitute the PC11
+$pc11_dwell_time = 2;			# number of seconds to wait for a PC61 to come to substitute the PC11
 
 
 $pc92filterdef = bless ([
@@ -143,13 +143,11 @@ sub handle_10
 	$main::me->normal(pc93($to, $from, $via, $pc->[3], $pc->[6]));
 }
 
-my $last;
-my $pc11_saved;
-my $pc11_saved_time;
-my $pc11_rx;
-my $rpc11_to_61;
-my $pc11_to_61;
-my $pc61_rx;
+my %pc11_saved;					# delayed PC11s
+my $pc11_rx;					# no of pc11 rxed
+my $pc61_rx;					# no of pc61 rxed
+my $pc11_to_61;					# no of 'better' pc61, that replaced stored waiting pc11
+my $rpc11_to_61;				# no of pc11s 'promoted' to pc61 by IP captured in routing table
 
 # DX Spot handling
 sub handle_11
@@ -267,35 +265,31 @@ sub handle_11
 	unless ($recurse) {
 		if ($pcno == 61) {
 			if (Spot::dup_find(@spot[0..4,7])) {
-				dbg("DUPE $pc->[0] $self->{call} -> key: $key recurse: $recurse dumped") if isdbg('pc11');
+				dbg("DUPE $pc->[0] $self->{call} -> key: $key dumped") if isdbg('pc11');
 				return;
 			} else {
 				++$pc61_rx;
 			}
 
-			if ($pc11_saved) {
-				if ($key eq $pc11_saved->[0]) {
-					++$pc11_to_61;
-					my $percent = $pc11_rx ? $pc11_to_61 * 100 / $pc11_rx : 0;
-					dbg(sprintf("PROMOTED BETTER $pc->[0] $key received, saved PC11 DUMPED pc61: $pc61_rx recurse: $recurse pc11: $pc11_rx -> pc61: $pc11_to_61 (%0.1f%%)", $percent)) if isdbg("pc11");
-					undef $pc11_saved;
-				}
-			} 
+			if ($pc11_saved{$key}) {
+				++$pc11_to_61;
+				my $percent = $pc11_rx ? $pc11_to_61 * 100 / $pc11_rx : 0;
+				dbg(sprintf("PROMOTED BETTER $self->{call} -> $pc->[0] $key, using PC61, saved PC11 DUMPED: $pc61_rx pc11: $pc11_rx better pc61: $pc11_to_61 (%0.1f%%)", $percent)) if isdbg("pc11");
+				delete $pc11_saved{$key};
+			}
 		}
 		if ($pcno == 11) {
 
 			if (Spot::dup_find(@spot[0..4,7])) {
-				dbg("DUPE $pc->[0] $self->{call} -> key: $key recurse: $recurse dumped") if isdbg('pc11');
+				dbg("DUPE $pc->[0] $self->{call} -> key: $key dumped") if isdbg('pc11');
 				return;
 			} else {
 				++$pc11_rx;
 			}
 
-			if ($pc11_saved) {
-				if ($key eq $pc11_saved->[0] ) {
-					dbg("DUPE $pc->[0] $self->{call } key: $key same as saved recurse: $recurse, dumped") if isdbg("pc11");
-					return;		# because it's a dup
-				}
+			if ($pc11_saved{$key}) {
+				dbg("DUPE $pc->[0] $self->{call } key: is saved, ignored") if isdbg("pc11");
+				return;		# because it's a dup
 			}
 
 			# can we promote this to a PC61?
@@ -306,45 +300,25 @@ sub handle_11
 				$pc->[7] = $spot[14] = $r->ip;
 				++$rpc11_to_61;
 				my $percent = $pc11_rx ? $rpc11_to_61 * 100 / $pc11_rx : 0;
-				dbg(sprintf("PROMOTED ROUTE $self->{call} -> PC11 spot $key PROMOTED to PC61 IP $spot[14] recurse: $recurse pc61: $pc61_rx pc11: $pc11_rx -> pc61 $pc11_to_61 (%0.1f%%)", $percent)) if isdbg("pc11");
-				undef $pc11_saved;
+				dbg(sprintf("PROMOTED ROUTE $self->{call} -> PC11 $key PROMOTED to PC61 with IP $spot[14] pc61: $pc61_rx pc11: $pc11_rx route->pc61 $rpc11_to_61 (%0.1f%%)", $percent)) if isdbg("pc11");
+				delete $pc11_saved{$key};
 			}
 
-			# if it is STILL (despite all efforts to change it)  a PC11
+			# if it is STILL (despite all efforts to change it) a PC11
+			# save it and wait - it will be called from pc11_process
 			if ($pcno == 11) {
-				if ($pc11_saved && $key ne $pc11_saved->[0]) {
-					if (Spot::dup_find(@spot[0..4,7])) {
-						dbg("DUPE saved PC11 $self->{call} -> key: $pc11_saved->[0] recurse: $recurse dumped") if isdbg('pc11');
-					} else {
-						dbg("RECURSE $self->{call} -> NEW $pc->[0] spot $key ne $pc11_saved->[0] recurse: $recurse, SAVE + recursing") if isdbg("pc11");
-						# shift @$pc11_saved;	# saved key
-						my $self = $pc11_saved->[1];
-						my @saved = @$pc11_saved[2..5];
-						$self->handle_11(@saved, 1);
-					}
-				}
-				$pc11_saved = [$key, $self, $pcno, $line, $origin, $pc];
-				$pc11_saved_time = $main::systime;
-				dbg("SAVED $self->{call} -> NEW $pc->[0] spot $key for a better offer, recurse: $recurse") if isdbg("pc11");
+				$pc11_saved{$key} = [$main::systime, $self, $pcno, $line, $origin, $pc];
+				dbg("SAVED $self->{call} -> NEW $pc->[0] spot $key waiting for a better offer") if isdbg("pc11");
 				return;
 			}
-			
-		} else {
-			my $count =  $pc11_to_61+$rpc11_to_61;
-			my $percent = $pc11_rx ? $count*100 / $pc11_rx : 0;
-			my $pc11_61 = $pc61_rx ? $pc11_rx*100 / $pc61_rx : 0; 
-			dbg(sprintf("PASSED $self->{call} -> $pc->[0] spot $key, recurse: $recurse pc11: $pc11_rx pc61: $pc61_rx PC11/PC61 ratio: %0.1f%%  pc11->pc61 conversions: $count (%0.1f%%) ", $pc11_61, $percent)) if isdbg("pc11");
-			$recurse = 0;
-			undef $pc11_saved;
 		}
-	} else {
-		# recursed
-		my $count =  $pc11_to_61+$rpc11_to_61;
-		my $percent = $pc11_rx ? $count*100 / $pc11_rx : 0;
-		my $pc11_61 = $pc61_rx ? $pc11_rx*100 / $pc61_rx : 0; 
-		dbg(sprintf("PASSED $self->{call} -> $pc->[0] spot $key, recurse: $recurse pc11: $pc11_rx pc61: $pc61_rx PC11/PC61 ratio: %0.1f%%  pc11->pc61 conversions: $count (%0.1f%%) ", $pc11_61, $percent)) if isdbg("pc11");
 	}
-	
+
+	my $count =  $pc11_to_61+$rpc11_to_61;
+	my $percent = $pc11_rx ? $count*100 / $pc11_rx : 0;
+	my $pc11_61 = $pc61_rx ? $pc11_rx*100 / $pc61_rx : 0; 
+	dbg(sprintf("PASSED $self->{call} -> $pc->[0] spot $key, pc11: $pc11_rx pc61: $pc61_rx PC11/PC61 ratio: %0.1f%%  total pc11->pc61: $count (%0.1f%%) ", $pc11_61, $percent)) if isdbg("pc11");
+
 	
 	# this goes after the input filtering, but before the add
 	# so that if it is input filtered, it isn't added to the dup
@@ -494,9 +468,9 @@ sub handle_11
 
 	# cancel any recursion as we have now processed it
 	if ($recurse) {
-		if ($pc11_saved && $key eq $pc11_saved->[0]) {
-			dbg("END RECURSED $self->{call} $pc->[0] key: $key saved_key removed and finished") if isdbg('pc11');
-			undef $pc11_saved;
+		if ($pc11_saved{$key}) {
+			dbg("END RECURSED $self->{call} $pc->[0] key: $key removed and finished") if isdbg('pc11');
+			delete $pc11_saved{$key};
 		} else {
 			dbg("END RECURSED $self->{call} $pc->[0] key: $key finished") if isdbg('pc11');
 		}
@@ -509,13 +483,14 @@ sub handle_11
 # used to kick outstanding PC11 if required
 sub pc11_process
 {
-	if ($pc11_saved && $main::systime > $pc11_saved_time + $pc11_dwell_time) {
-		dbg("SAVED PC11 spot $pc11_saved->[0] timed out waiting, recursing") if isdbg("pc11");
-		shift @$pc11_saved;	# saved key
-		my $self = shift @$pc11_saved;
-		my @saved = @$pc11_saved;
-		undef $pc11_saved;
-		$self->handle_11(@saved, 1);
+	foreach my $key (keys %pc11_saved) {
+		my $r = $pc11_saved{$key};
+		if ($main::systime > $r->[0] + $pc11_dwell_time) {
+			dbg("SAVED PC11 spot $key timed out waiting, recursing") if isdbg("pc11");
+			my $self = $r->[1];
+			delete $pc11_saved{$key};
+			$self->handle_11(@$r[2..5], 1);
+		}
 	}
 }
 

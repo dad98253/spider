@@ -288,7 +288,7 @@ sub handle_11
 			}
 
 			if ($pc11_saved{$key}) {
-				dbg("DUPE $pc->[0] $self->{call } key: is saved, ignored") if isdbg("pc11");
+				dbg("DUPE $pc->[0] $self->{call } key: $key is saved, ignored") if isdbg("pc11");
 				return;		# because it's a dup
 			}
 

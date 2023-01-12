@@ -1,3 +1,6 @@
+12Jan23=======================================================================
+1. Regularise 'set/debug pc11' output to track all the routes through PC11 and
+   PC61 processing and statistics.
 11Jan23=======================================================================
 1. Improve (?) the PC11 -> PC61 upgrading process that delays incoming PC11s
    for a very short time in the hope that a PC61 will come in to be used 
@@ -17,7 +20,7 @@
 25 * * * * run_cmd('load/badip')
 
    The tor files are downloaded from https://lists.fissionrelays.net/tor/ at 
-   23 minutes pass every hour, please would you use some other minute than
+   15 minutes past every hour, please would you use some other minute than
    23 or 24 to get your own local copies. 
 
    A 'set/debug badip' will show you what is being blocked. 

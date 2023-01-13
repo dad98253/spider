@@ -49,7 +49,7 @@ use vars qw($pc11_max_age $pc23_max_age $last_pc50 $eph_restime $eph_info_restim
 			$eph_pc15_restime $pc9x_past_age $pc9x_dupe_age
 			$pc10_dupe_age $pc92_slug_changes $last_pc92_slug
 			$pc92Ain $pc92Cin $pc92Din $pc92Kin $pc9x_time_tolerance
-			$pc92filterdef $senderverify $pc11_dwell_time
+			$pc92filterdef $senderverify $pc11_dwell_time $pc11_extract_route
 		   );
 
 $pc9x_dupe_age = 60;			# catch loops of circular (usually) D records
@@ -63,6 +63,7 @@ $pc9x_time_tolerance;           # thing a node might send - once an hour and we 
 $senderverify = 0;				# 1 - check for forged PC11 or PC61.
                                 # 2 - if forged, dump them.
 $pc11_dwell_time = 2;			# number of seconds to wait for a PC61 to come to substitute the PC11
+$pc11_extract_route = 1;		# generate missing  user route entry and IP address from passing PC61s
 
 
 $pc92filterdef = bless ([
@@ -167,9 +168,7 @@ sub handle_11
 		}
 	}
 
-	my $type = 
-
-	dbg("INPUT $self->{call} -> $line origin $origin recurse: $recurse") if isdbg("pc11") || isdbg("pc61"); 
+	dbg("INPUT $self->{call}: $line origin $origin recurse: $recurse") if isdbg("pc11") || isdbg("pc61"); 
 
 #	my ($hops) = $pc->[8] =~ /^H(\d+)/;
 
@@ -265,23 +264,46 @@ sub handle_11
 	unless ($recurse) {
 		if ($pcno == 61) {
 			if (Spot::dup_find(@spot[0..4,7])) {
-				dbg("DUPE $pc->[0] $self->{call} -> key: $key dumped") if isdbg('pc11');
+				dbg("DUPE $pc->[0] $self->{call}: key: $key dumped") if isdbg('pc11');
 				return;
 			} else {
 				++$pc61_rx;
 			}
 
+			# as we have a route to a user, if it does not exist, create and link if (and only if) the node exists as well
+			if ($pc->[8]) {
+				my $new = $pc->[8];
+				# $new =~ s/,/:/g;
+				my $r = Route::User::get($pc->[6]);
+				unless ($r) {
+					my $rn = Route::Node::get($pc->[7]) || Route::Node->new($pc->[7]);
+					$rn->add_user($pc->[6], 0, $pc->[8]);
+					$r = Route::User::get($pc->[6]);
+				}
+				if ($r) {
+					if ($r->ip ne $pc->[8]) {
+						my $old = $r->ip;
+						$r->ip($new);
+						dbg("ROUTE ALTER IP node: $pc->[7] user: $pc->[6] old IP: '$old'-> new IP: '$new'") if isdbg('pc11');
+					} else {
+						dbg("ROUTE NEW IP node: $pc->[7] user: $pc->[6] IP: '$new'") if isdbg('pc11');
+					}
+				} else {
+					dbg("ROUTE ADD Failed for node $pc->[7] user $pc->[6]") if isdbg('pc11');
+				}
+			}
+
 			if ($pc11_saved{$key}) {
 				++$pc11_to_61;
 				my $percent = $pc11_rx ? $pc11_to_61 * 100 / $pc11_rx : 0;
-				dbg(sprintf("PROMOTED BETTER $self->{call} -> $pc->[0] $key, using PC61, saved PC11 DUMPED: $pc61_rx pc11: $pc11_rx better pc61: $pc11_to_61 (%0.1f%%)", $percent)) if isdbg("pc11");
+				dbg(sprintf("PROMOTED BETTER $self->{call}: $pc->[0] $key, using pc61, WAITING pc11 DUMPED: $pc61_rx pc11: $pc11_rx better pc61: $pc11_to_61 (%0.1f%%)", $percent)) if isdbg("pc11");
 				delete $pc11_saved{$key};
 			}
 		}
 		if ($pcno == 11) {
 
 			if (Spot::dup_find(@spot[0..4,7])) {
-				dbg("DUPE $pc->[0] $self->{call} -> key: $key dumped") if isdbg('pc11');
+				dbg("DUPE $pc->[0] $self->{call}: key: $key dumped") if isdbg('pc11');
 				return;
 			} else {
 				++$pc11_rx;
@@ -294,13 +316,14 @@ sub handle_11
 
 			# can we promote this to a PC61?
 			my $r = Route::User::get($spot[4]); # find spotter
+
 			if ($r && $r->ip) {	                # do we have an ip addres
 				$pcno = 61;
 				$pc->[0] = 'PC61';
 				$pc->[7] = $spot[14] = $r->ip;
 				++$rpc11_to_61;
 				my $percent = $pc11_rx ? $rpc11_to_61 * 100 / $pc11_rx : 0;
-				dbg(sprintf("PROMOTED ROUTE $self->{call} -> PC11 $key PROMOTED to PC61 with IP $spot[14] pc61: $pc61_rx pc11: $pc11_rx route->pc61 $rpc11_to_61 (%0.1f%%)", $percent)) if isdbg("pc11");
+				dbg(sprintf("PROMOTED ROUTE $self->{call}: pc11 $key PROMOTED to pc61 with IP $spot[14] pc61: $pc61_rx pc11: $pc11_rx route->pc61 $rpc11_to_61 (%0.1f%%)", $percent)) if isdbg("pc11");
 				delete $pc11_saved{$key};
 			}
 
@@ -308,27 +331,23 @@ sub handle_11
 			# save it and wait - it will be called from pc11_process
 			if ($pcno == 11) {
 				$pc11_saved{$key} = [$main::systime, $self, $pcno, $line, $origin, $pc];
-				dbg("SAVED $self->{call} -> NEW $pc->[0] spot $key waiting for a better offer") if isdbg("pc11");
+				dbg("WAITING $self->{call}: NEW $pc->[0] spot $key waiting for a better offer") if isdbg("pc11");
 				return;
 			}
 		}
 	}
 
-	my $count =  $pc11_to_61+$rpc11_to_61;
-	my $percent = $pc11_rx ? $count*100 / $pc11_rx : 0;
-	my $pc11_61 = $pc61_rx ? $pc11_rx*100 / $pc61_rx : 0; 
-	dbg(sprintf("PASSED $self->{call} -> $pc->[0] spot $key, pc11: $pc11_rx pc61: $pc61_rx PC11/PC61 ratio: %0.1f%%  total pc11->pc61: $count (%0.1f%%) ", $pc11_61, $percent)) if isdbg("pc11");
 
 	
 	# this goes after the input filtering, but before the add
 	# so that if it is input filtered, it isn't added to the dup
 	# list. This allows it to come in from a "legitimate" source
 	if (Spot::dup(@spot[0..4,7])) {
-		dbg("PCPROT: Duplicate Spot  $self->{call} -> $pc->[0] $key ignored\n") if isdbg('chanerr') || isdbg('dupespot') || isdbg('pc11');
+		dbg("PCPROT: Duplicate Spot  $self->{call}: $pc->[0] $key ignored\n") if isdbg('chanerr') || isdbg('dupespot') || isdbg('pc11');
 		return;
 	}
 
-	dbg("PROCESSING $self->{call} -> $pc->[0] key: $key") if isdbg('pc11');
+	dbg("PROCESSING $self->{call}: $pc->[0] key: $key") if isdbg('pc11');
 	
 	# we check IP addresses for PC61 - this will also dedupe PC11 copies
 	if (@$pc > 8 && is_ipaddr($pc->[8])) {
@@ -467,16 +486,21 @@ sub handle_11
 	send_dx_spot($self, $line, @spot) if @spot;
 
 	# cancel any recursion as we have now processed it
+	my $count =  $pc11_to_61+$rpc11_to_61;
+	my $percent = ($pc11_rx + $pc61_rx) ? ($pc11_rx * 100) / ($pc11_rx + $pc61_rx) : 0;
+	my $pc11_61 = $pc11_rx ? ($count * 100) / $pc11_rx : 0;
+	my $data = "$self->{call} $pc->[0] key: $key";
+	my $stats = sprintf "pc11: $pc11_rx pc61: $pc61_rx pc11%%: %0.1f%% pc11->pc61: $count(%0.1f%%)", $percent, $pc11_61;
 	if ($recurse) {
 		if ($pc11_saved{$key}) {
-			dbg("END RECURSED $self->{call} $pc->[0] key: $key removed and finished") if isdbg('pc11');
+			dbg("END RECURSED $data removed and finished $stats") if isdbg('pc11');
 			delete $pc11_saved{$key};
 		} else {
-			dbg("END RECURSED $self->{call} $pc->[0] key: $key finished") if isdbg('pc11');
+			dbg("END RECURSED $data finished $stats") if isdbg('pc11'); 
 		}
 		$recurse = 0;
 	} else {
-		dbg("END NORMAL $self->{call} $pc->[0] key: $key finished") if isdbg('pc11');
+		dbg("END NORMAL $data finished $stats") if isdbg('pc11');
 	}
 }
 
@@ -486,12 +510,29 @@ sub pc11_process
 	foreach my $key (keys %pc11_saved) {
 		my $r = $pc11_saved{$key};
 		if ($main::systime > $r->[0] + $pc11_dwell_time) {
-			dbg("SAVED PC11 spot $key timed out waiting, recursing") if isdbg("pc11");
+			dbg("RECURSE PC11 spot $key timed out waiting, resend") if isdbg("pc11");
 			my $self = $r->[1];
 			delete $pc11_saved{$key};
 			$self->handle_11(@$r[2..5], 1);
 		}
 	}
+}
+
+# return the pc11 / pc61 / promotions data
+sub get_pc11_61_stats
+{
+	my $promotions =  $pc11_to_61+$rpc11_to_61;
+	my $percent = ($pc11_rx + $pc61_rx) ? ($pc11_rx * 100) / ($pc11_rx + $pc61_rx) : 0;
+	my $pc11_61p = $pc11_rx ? ($promotions * 100) / $pc11_rx : 0;
+	return {
+			pc11_rx => $pc11_rx+0,
+			pc61_rx => $pc61_rx+0,
+			pc11_to_61 => $pc11_to_61+0,
+			rpc11_to_61 => $rpc11_to_61+0,
+			promotions => $promotions+0,
+			pc11_percent => $percent+0,
+			promotions_percent => $pc11_61p+0,
+		   };
 }
 
 # announces
@@ -807,7 +848,7 @@ sub handle_18
 	$self->state('init');
 
 	my $parent = Route::Node::get($self->{call});
-
+	
 	# record the type and version offered
 	if (my ($software, $version) = $pc->[1] =~ /(DXSpider|CC\s*Cluster)\s+Version: (\d+(?:\.\d+)?)/i) {
 		$version += 0;
@@ -828,6 +869,20 @@ sub handle_18
 			$self->sort('S');
 		}
 #		$self->{handle_xml}++ if DXXml::available() && $pc->[1] =~ /\bxml/;
+	} elsif (my ($software, $version, $build) = $pc->[1] =~ /(AR-Cluster)\s+Version:\s+(\d+\.\d+).?(\d+\.\d+)?/) {
+		dbg("$self->{call} = $software version $version build $build");
+		$self->{version} = $version;
+		$self->user->version($version);
+		$parent->version($version);
+		$self->{build} = $build;
+		$self->user->build($build);
+		$parent->build($build);
+		unless ($self->is_arcluster) {
+			dbg("Change U " . $self->user->sort . " C $self->{sort} -> R");
+			$self->user->sort('R');
+			$self->user->put;
+			$self->sort('R');
+		}
 	} else {
 		dbg("$self->{call} = Unknown software ($pc->[1] $pc->[2])");
 		$self->version(50.0);

@@ -114,19 +114,35 @@ sub write_cache
 	};
 	if (!$@ && @s) {
 		my $fh = IO::File->new(">$cachefn") or confess("writing $cachefn $!");
-		if (isdbg("routecache")) {
-			$fh->print(sort @s);
-		}
-		else {
-			$fh->print(@s);
-		}
+		print $fh $_ for (sort @s);
 		$fh->close;
 	} else {
-		dbg("Route::User:Write_cache error '$@'");
+		dbg("Route::User::write_cache error '$@'");
 		return;
 	}
 	my $diff = _diffms($ta);
-	dbg("Route::User:WRITE_CACHE time to write: $diff mS");
+	dbg("Route::User::write_cache time to write: $diff mS");
+}
+
+sub read_cache
+{
+	my $json = DXJSON->new;
+	$json->canonical(isdbg('routecache'));
+	
+	my $ta = [ gettimeofday ];
+	my $count;
+	
+	my $fh = IO::File->new("$cachefn") or confess("reading $cachefn $!");
+	while (my $l = <$fh>) {
+		chomp $l;
+		my ($k, $v) = split /:/, $l, 2;
+		$list{$k} = bless $json->decode($v) or confess("json error decoding '$v'");
+		++$count;
+	}
+	$fh->close;
+
+	my $diff = _diffms($ta);
+	dbg("Route::User::read_cache time to read $count records from $cachefn : $diff mS");
 }
 
 #

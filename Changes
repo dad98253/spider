@@ -1,3 +1,13 @@
+13Jan23=======================================================================
+1. Periodically store Routing tables and, if they are young enough (def: 3hrs)
+   autotically restore them on restart of the node. This will short circuit
+   the need to rebuild the routing tables from scratch on every restart - 
+   which is normally for something like software update. 
+2. Fix pc11 debugging stats with the correct figures. Sigh... Also move some
+   of the totals to a different place.
+3. Add show/spotstats command which gives the current spot statistics shown
+   during pc11 debugging (which means you don't need to set/deb pc11 unless
+   you really want that extra noise).
 12Jan23=======================================================================
 1. Regularise 'set/debug pc11' output to track all the routes through PC11 and
    PC61 processing and statistics.
@@ -14,9 +24,9 @@
    http://www.dxspider.net/download/badip.global. I have added the following 
    lines to my /spider/local_cmd/crontab:
 
-24 * * * * spawn('cd /spider/local_data; wget http://www.dxspider.net/download/badip.torexit')
-24 * * * * spawn('cd /spider/local_data; wget http://www.dxspider.net/download/badip.torrelay')
-24 * * * * spawn('cd /spider/local_data; wget http://www.dxspider.net/download/badip.global')
+24 * * * * spawn('cd /spider/local_data; wget -qN http://www.dxspider.net/download/badip.torexit')
+24 * * * * spawn('cd /spider/local_data; wget -qN http://www.dxspider.net/download/badip.torrelay')
+24 * * * * spawn('cd /spider/local_data; wget -qN http://www.dxspider.net/download/badip.global')
 25 * * * * run_cmd('load/badip')
 
    The tor files are downloaded from https://lists.fissionrelays.net/tor/ at 

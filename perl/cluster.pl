@@ -464,6 +464,9 @@ sub cease
 	# close all databases
 	DXDb::closeall;
 
+	# Write route cache
+	Route::write_cache();
+	
 	# close all listeners
 	foreach my $l (@listeners) {
 		$l->close_server;
@@ -646,7 +649,9 @@ sub setup_start
 		}
 	}
 
-
+	# read any route cache there might be
+	Route::read_cache();
+	
 	# start listening for incoming messages/connects
 	dbg("starting listeners ...");
 	my $conn = IntMsg->new_server($clusteraddr, $clusterport, \&login);
@@ -860,6 +865,7 @@ sub per_minute
 sub per_10_minute
 {
 	RBN::per_10_minute();
+	Route::write_cache();
 }
 
 sub per_hour

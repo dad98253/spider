@@ -423,6 +423,18 @@ sub field_prompt
 	return $val->{$ele} || $valid{$ele};
 }
 
+sub write_cache
+{
+	Route::Node::write_cache();
+	Route::User::write_cache();
+}
+
+sub read_cache
+{
+	Route::Node::read_cache();
+	Route::User::read_cache();
+}
+
 #
 # generic AUTOLOAD for accessors
 #

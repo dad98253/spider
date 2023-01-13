@@ -2797,6 +2797,18 @@ So for example:-
  SH/SAT AO-10 
  SH/SAT FENGYUN1 12 2
 
+=== 1^SHOW/SPOTSTATS^Show the current Spot statistics
+View the current unique spot sentences seen since the last restart.
+
+It shows the number of PC11 and PC61 sentences and the percentage
+of PC11s received of the total of both. It also shows the number
+of PC11s that have been promoted to PC61 before being passed on
+plus a total percentage of incoming PC11 that have been promoted.
+
+A PC11 can be promoted to PC61 by a stored IP address in the routing
+table or it can be promoted by being delayed to a short for any
+passing PC61 from another node.
+ 
 === 6^SHOW/STARTUP <call>^View a user startup script
 === 0^SHOW/STARTUP^View your own startup script
 View the contents of a startup script created with SET/STARTUP.

@@ -1,3 +1,6 @@
+14Jan23=======================================================================
+1. Fixed route PC11 promotions so that a new PC61 is actually generated and 
+   also sent instead of the original PC11 (to PC61 capable nodes).
 13Jan23=======================================================================
 1. Periodically store Routing tables and, if they are young enough (def: 3hrs)
    autotically restore them on restart of the node. This will short circuit

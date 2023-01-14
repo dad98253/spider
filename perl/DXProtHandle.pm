@@ -317,13 +317,16 @@ sub handle_11
 			# can we promote this to a PC61?
 			my $r = Route::User::get($spot[4]); # find spotter
 
-			if ($r && $r->ip) {	                # do we have an ip addres
+			if ($r && $r->ip) {	                # do we have an ip address
 				$pcno = 61;
 				$pc->[0] = 'PC61';
-				$pc->[7] = $spot[14] = $r->ip;
+				my $hops = $pc->[8];
+				$pc->[8] = $spot[14] = $r->ip;
 				++$rpc11_to_61;
 				my $percent = $pc11_rx ? $rpc11_to_61 * 100 / $pc11_rx : 0;
 				dbg(sprintf("PROMOTED ROUTE $self->{call}: pc11 $key PROMOTED to pc61 with IP $spot[14] pc61: $pc61_rx pc11: $pc11_rx route->pc61 $rpc11_to_61 (%0.1f%%)", $percent)) if isdbg("pc11");
+				$line = join '^', @$pc, $hops, '~';
+				dbg("CHANGED saved key: $key PC11 line to $line") if isdbg('pc11');
 				delete $pc11_saved{$key};
 			}
 
@@ -356,7 +359,7 @@ sub handle_11
 		$ip =~ s/^::ffff://;
 		if (DXCIDR::find($ip)) {
 			dbg($line) if isdbg('nologchan');
-			dbg("PCPROT: $ip in badip list, dropped");
+			dbg("PCPROT: PC61 $ip in badip list, dropped");
 			return;
 		}
 	}

@@ -113,7 +113,7 @@ sub write_cache
 	    }
 	};
 	if (!$@ && @s) {
-		my $fh = IO::File->new(">$cachefn") or carp("writing $cachefn $!");
+		my $fh = IO::File->new(">$cachefn") or dbg("Route::User: ERROR writing $cachefn $!"), return;
 		print $fh $_ for (sort @s);
 		$fh->close;
 	} else {
@@ -132,11 +132,11 @@ sub read_cache
 	my $ta = [ gettimeofday ];
 	my $count;
 	
-	my $fh = IO::File->new("$cachefn") or carp("reading $cachefn $!");
+	my $fh = IO::File->new("$cachefn") or dbg("Route::User: ERROR reading $cachefn $!"), return;
 	while (my $l = <$fh>) {
 		chomp $l;
 		my ($k, $v) = split /:/, $l, 2;
-		$list{$k} = bless $json->decode($v) or carp("json error decoding '$v'");
+		$list{$k} = bless $json->decode($v) or dbg("Route::User: Error json error $! decoding '$v'"), next;
 		++$count;
 	}
 	$fh->close if $fh;

@@ -8,19 +8,21 @@
 use 5.16.1;
 
 # search local then perl directories
+use strict;
+
 BEGIN {
 	# root of directory tree for this system
-	$root = "/spider"; 
+	our $root = "/spider"; 
 	$root = $ENV{'DXSPIDER_ROOT'} if $ENV{'DXSPIDER_ROOT'};
 
 	mkdir "$root/local_data", 02777 unless -d "$root/local_data";
 
 	unshift @INC, "$root/perl";	# this IS the right way round!
 	unshift @INC, "$root/local";
-	$data = "$root/data";
+	our $data = "$root/data";
 }
 
-use strict;
+
 use DXVars;
 use SysVar;
 

@@ -1,3 +1,7 @@
+18Jan23=======================================================================
+1. Make sure than *every* channel has an IP address. Thank you (I think) Kin 
+   for pointing out that PC92 A records were not going out with IP addresses.
+   I'm guessing that other things (like spots) had a similar problem. 
 15Jan23=======================================================================
 1. Fix strange errors for carp on missing route_*_cache files on startup.
 14Jan23=======================================================================

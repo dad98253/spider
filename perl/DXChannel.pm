@@ -185,6 +185,8 @@ sub alloc
 	}
 	$self->{inqueue} = [];
 
+	$self->{hostname} = $self->{conn}->peerhost if $conn;
+
 	$count++;
 	dbg("DXChannel $self->{call} created ($count)") if isdbg('chan');
 	bless $self, $pkg; 

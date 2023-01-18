@@ -172,9 +172,9 @@ sub start
 	my $name = $user->{name};
 		
 	# log it
-	my $host = $self->{conn}->peerhost;
-	$host ||= "unknown";
-	$self->{hostname} = $host;
+	unless ($self->{hostname}) {
+		$self->{hostname} = $self->{conn}->peerhost || 'unknown';
+	}
 
 	$self->{name} = $name ? $name : $call;
 	$self->state('prompt');		# a bit of room for further expansion, passwords etc

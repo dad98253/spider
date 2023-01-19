@@ -74,8 +74,11 @@ sub new
 	# routing, this must go out here to prevent race condx
 	my $pkg = shift;
 	my $call = shift;
-#	my @rout = $main::routeroot->add_user($call, Route::here(1));
-	DXProt::_add_thingy($main::routeroot, [$call, 0, 0, 1, undef, undef, $self->hostname], );
+	#	my @rout = $main::routeroot->add_user($call, Route::here(1));
+	my $ipaddr = $self->hostname;
+	$ipaddr = $main::localhost_alias_ipv6 if $ipaddr eq '::1' && $main::localhost_alias_ipv6;
+	$ipaddr = $main::localhost_alias_ipv4 if $ipaddr =~ /^127\./ && $main::localhost_alias_ipv4;
+	DXProt::_add_thingy($main::routeroot, [$call, 0, 0, 1, undef, undef, $ipaddr], );
 
 	# ALWAYS output the user
 	my $ref = Route::User::get($call);

@@ -218,6 +218,10 @@ our $clssecs;					# the amount of cpu time the DXSpider process have consumed
 our $cldsecs;					# the amount of cpu time any child processes have consumed
 our $allowslashcall;			# Allow / in connecting callsigns (ie PA0/G1TLH, or even PA0/G1TLH/2) 
 
+our $localhost_alias_ipv4;		# these are the IPV4 & 6 aliases for localhost connected clients
+our $localhost_alias_ipv6;		# for things (PC92, PC61 etc) that expose IP addresses. These *may*
+                                # be set by Msg.pm stuff if they are left undefined but, if you need
+                                # certanty then set/var them in the startup file.
 
 use vars qw($version $subversion $build $gitversion $gitbranch);
 
@@ -514,7 +518,6 @@ sub AGWrestart
 {
 	AGWMsg::init(\&new_channel);
 }
-
 
 sub setup_start
 {

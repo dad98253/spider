@@ -137,6 +137,24 @@ sub peerhost
 	return $conn->{peerhost};
 }
 
+sub sockhost
+{
+	my $conn = shift;
+	unless ($conn->{sockhost}) {
+		$conn->{sockhost} ||= 'ax25' if $conn->ax25;
+		$conn->{sockhost} ||= $conn->{sock}->handle->sockhost if $conn->{sock};
+		$conn->{sockhost} ||= 'UNKNOWN';
+	}
+	$conn->{sockhost} =~ s/^::ffff://;
+	if (! defined $main::localhost_alias_ipv4 && $conn->{sockhost} =~ /\./ && $conn->{sockhost} !~ /^127\./) {
+		$main::localhost_alias_ipv4 = $conn->{sockhost};
+		dbg("Msg: localhost_alias_ipv4 = '$main::localhost_alias_ipv4'");
+	} elsif (! defined $main::localhost_alias_ipv6 && $conn->{sockhost} =~ /:/ && $conn->{sockhost} !~ /^::1$/) {
+		$main::localhost_alias_ipv6 = $conn->{sockhost};
+		dbg("Msg: localhost_alias_ipv6 = '$main::localhost_alias_ipv6'");
+	}
+	return $conn->{sockhost};
+}
 #-----------------------------------------------------------------
 # Send side routines
 
@@ -152,7 +170,8 @@ sub _on_connect
 	$sock->timeout(0);
 	$sock->start;
 	$conn->{peerhost} = eval { $handle->peerhost; };
-	dbg((ref $conn) . " connected $conn->{cnum} to $conn->{peerhost}:$conn->{peerport}") if isdbg('conn') || isdbg ('connect');
+	$conn->{sockhost} = eval { $handle->sockhost; };
+	dbg((ref $conn) . " connected $conn->{cnum}:$conn->{sockhost} to $conn->{peerhost}:$conn->{peerport}") if isdbg('conn') || isdbg ('connect');
 	if ($conn->{on_connect}) {
 		&{$conn->{on_connect}}($conn, $handle);
 	}
@@ -449,7 +468,7 @@ sub _rcv {                     # Complement to _send
 	my $msg = shift;
     my $sock = $conn->{sock};
     return unless defined($sock);
-	return if $conn->{disconnecting};
+	return if $conn->{disonnecting};
 
 	$total_in += length $msg;
 	$conn->{datain} += length $msg;
@@ -493,9 +512,9 @@ sub new_client {
 	$sock->timeout(0);
 	$sock->start;
 	$conn->{peerhost} = $handle->peerhost || 'unknown';
-	$conn->{peerhost} =~ s|^::ffff:||; # chop off leading pseudo IPV6 stuff on dual stack listeners
 	$conn->{peerport} = $handle->peerport || 0;
-	dbg((ref $conn) . " accept $conn->{cnum} from $conn->{peerhost}:$conn->{peerport}") if isdbg('conn') || isdbg('connect');
+	$conn->{sockhost} = $handle->sockhost || '';
+	dbg((ref $conn) . " accept $conn->{cnum}:$conn->{sockhost} from $conn->{peerhost}:$conn->{peerport}") if isdbg('conn') || isdbg('connect');
 	my ($rproc, $eproc) = &{$server_conn->{rproc}} ($conn, $conn->{peerhost}, $conn->{peerport});
 	$conn->{sort} = 'Incoming';
 	if ($eproc) {

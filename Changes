@@ -1,3 +1,15 @@
+19Jan23=======================================================================
+1. Introduce aliasing for localhost in DX Spots and outgoing PC92 A records
+   on login. There are two variables which can be set with the alias to use:
+      $main::localhost_alias_ipv4
+      $main::localhost_alias_ipv6 
+   These can be set in the /spider/scripts/startup, but this is only 
+   necessary if the node has more than one interface, or virtual hosts. If 
+   there is ONLY ONE ipv4 and/or ipv6 IP address on the node machine then 
+   these variables will be automatically populated on first use. But the SAFE
+   thing to do is to set them in the startup file.  
+
+   THIS FEATURE IS EXPERIMENTAL... 
 18Jan23=======================================================================
 1. Make sure than *every* channel has an IP address. Thank you (I think) Kin 
    for pointing out that PC92 A records were not going out with IP addresses.

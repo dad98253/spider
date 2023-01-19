@@ -25,6 +25,9 @@ return (1, $self->msg('e28')) unless $self->isregistered;
 
 
 my $addr = $self->hostname || '127.0.0.1';
+$addr = $main::localhost_alias_ipv6 if $addr eq '::1' && $main::localhost_alias_ipv6;
+$addr = $main::localhost_alias_ipv4 if $addr =~ /^127\./ && $main::localhost_alias_ipv4;
+
 Log('cmd', "$self->{call}|$addr|dx|$line");
 
 my @bad;

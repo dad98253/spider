@@ -82,6 +82,8 @@ sub _put
 
 sub append
 {
+	return 0 unless $active;
+	
 	my $suffix = shift;
 	my @in = @_;
 	my @out;
@@ -104,6 +106,7 @@ sub append
 
 sub add
 {
+	return 0 unless $active;
 	my $count = 0;
 	
 	for my $ip (@_) {
@@ -127,6 +130,8 @@ sub add
 
 sub clean_prep
 {
+	return unless $active;
+
 	if ($ipv4 && $count4) {
 		$ipv4->clean;
 		$ipv4->prep_find;
@@ -150,6 +155,7 @@ sub _sort
 
 sub list
 {
+	return () unless $active;
 	my @out;
 	push @out, $ipv4->list if $count4;
 	push @out, $ipv6->list if $count6;
@@ -199,6 +205,8 @@ sub _touch
 
 sub reload
 {
+	return 0 unless $active;
+
 	new();
 
 	my $count = 0;
@@ -224,6 +232,8 @@ sub reload
 
 sub new
 {
+	return 0 unless $active;
+
 	$ipv4 = Net::CIDR::Lite->new;
 	$ipv6 = Net::CIDR::Lite->new;
 	$count4 = $count6 = 0; 

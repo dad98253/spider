@@ -9,10 +9,13 @@ my ($self, $line) = @_;
 return (1, $self->msg('e5')) if $self->remotecmd;
 # are we permitted?
 return (1, $self->msg('e5')) if $self->priv < 6;
+return (1, q{Please install Net::CIDR::Lite or libnet-cidr-lite-perl to use this command}) unless $DXCIDR::active;
+
 my @out;
 my @added;
 my @in = split /\s+/, $line;
 my $maxlth = 0;
+my $width = $self->width // 80;
 
 #$DB::single = 1;
 
@@ -20,7 +23,7 @@ my $maxlth = 0;
 my @list = map {my $s = $_; $s =~ s|/32$||; $maxlth = length $s if length $s > $maxlth; $s =~ /^1$/?undef:$s} DXCIDR::list();
 my @l;
 $maxlth //= 20;
-my $n = int (80/($maxlth+1));
+my $n = int ($width/($maxlth+1));
 my $format = "\%-${maxlth}s " x $n;
 chop $format;
 
@@ -45,5 +48,5 @@ unless (@in) {
 	push @out, sprintf $format, @l;
 }
 
-push @out, "show/badip: " . scalar @list . " records found";
+push @out, "show/badip: " . scalar @out . " records found";
 return (1, @out);

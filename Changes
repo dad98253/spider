@@ -17,6 +17,8 @@
    than just the normal definitions of localhost. So for 'normal' nodes with
    one external interface, you DO NOT NEED TO DO ANY OF THIS. 
 2. Added CTY-3304 prefix data
+3. Fix Bad IP address system so that one can carry on as normal without
+   Net::CIDR::Lite (or libnet-cidr-lite-perl on debian based systems)
 19Jan23=======================================================================
 1. Introduce aliasing for localhost in DX Spots and outgoing PC92 A records
    on login. There are two variables which can be set with the alias to use:

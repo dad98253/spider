@@ -49,7 +49,8 @@ use DXCIDR;
 
 use strict;
 use vars qw(%Cache %cmd_cache $errstr %aliases $scriptbase %nothereslug
-	$maxbadcount $msgpolltime $default_pagelth $cmdimportdir $users $maxusers);
+	$maxbadcount $msgpolltime $default_pagelth $cmdimportdir $users $maxusers
+);
 
 %Cache = ();					# cache of dynamically loaded routine's mod times
 %cmd_cache = ();				# cache of short names
@@ -75,9 +76,7 @@ sub new
 	my $pkg = shift;
 	my $call = shift;
 	#	my @rout = $main::routeroot->add_user($call, Route::here(1));
-	my $ipaddr = $self->hostname;
-	$ipaddr = $main::localhost_alias_ipv6 if $ipaddr eq '::1' && $main::localhost_alias_ipv6;
-	$ipaddr = $main::localhost_alias_ipv4 if $ipaddr =~ /^127\./ && $main::localhost_alias_ipv4;
+	my $ipaddr = alias_localhost($self->hostname);
 	DXProt::_add_thingy($main::routeroot, [$call, 0, 0, 1, undef, undef, $ipaddr], );
 
 	# ALWAYS output the user
@@ -1439,6 +1438,21 @@ sub spawn_cmd
 sub user_count
 {
     return ($users, $maxusers);
+}
+
+# alias localhost if required. This is designed to repress all localhost and other
+# internal interfaces to a fixed (outside) IPv4 or IPV6 address
+sub alias_localhost
+{
+	my $hostname = shift;
+	if ($hostname =~ /./) {
+		return $hostname unless $main::localhost_alias_ipv4;
+		return (grep $hostname eq $_, @main::localhost_names) ? $main::localhost_alias_ipv4 : $hostname;
+	} elsif ($hostname =~ /:/) {
+		return $hostname unless $main::localhost_alias_ipv6;
+		return (grep $hostname eq $_, @main::localhost_names) ? $main::localhost_alias_ipv6 : $hostname;
+	}
+	return $hostname;
 }
 
 1;

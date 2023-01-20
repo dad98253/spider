@@ -1,3 +1,21 @@
+20Jan23=======================================================================
+1. Add the variable @main::localhost_names to allow other IP addresses to
+   be treated in the same way as localhost in item 1 on 19Jan23 below. NOTE
+   you must include ALL the normal localhost names + any other interface
+   names that you might want to include:
+
+      set/var @main::localhost_names qw(127.0.0.1 ::1 192.168.1.30)
+
+   using the qw() construction is easier than:
+
+      set/var @main::localhost_names ('127.0.0.1', '::1', '192.168.1.30')
+
+   but either will work. You can define as many IP addresses as you like and
+   they can be IPV4 or 6. 
+   
+   You do NOT need to fiddle with this unless you specifically have more
+   than just the normal definitions of localhost. So for 'normal' nodes with
+   one external interface, you DO NOT NEED TO DO ANY OF THIS. 
 19Jan23=======================================================================
 1. Introduce aliasing for localhost in DX Spots and outgoing PC92 A records
    on login. There are two variables which can be set with the alias to use:

@@ -218,6 +218,8 @@ our $clssecs;					# the amount of cpu time the DXSpider process have consumed
 our $cldsecs;					# the amount of cpu time any child processes have consumed
 our $allowslashcall;			# Allow / in connecting callsigns (ie PA0/G1TLH, or even PA0/G1TLH/2) 
 
+our @localhost_names = qw(127.0.0.1 ::1); # all ip addresses that will need to be aliased below (ipv4 or ipv6)
+
 our $localhost_alias_ipv4;		# these are the IPV4 & 6 aliases for localhost connected clients
 our $localhost_alias_ipv6;		# for things (PC92, PC61 etc) that expose IP addresses. These *may*
                                 # be set by Msg.pm stuff if they are left undefined but, if you need

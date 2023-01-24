@@ -305,7 +305,7 @@ sub handle_11
 		if ($pcno == 61) {
 
 			if ($pc11_saved{$key}) {
-				# before we promote by route, check that it's not a dupe (but don't insert it).
+				# before we promote  because it's a better pc61, check that it's not a dupe (but don't insert it).
 				if (Spot::dup_find(@spot[0..4,7])) {
 					dbg("PCPROT: Duplicate Spot  $self->{call}: $pc->[0] $key ignored\n") if isdbg('chanerr') || isdbg('dupespot') || isdbg('pc11');
 					delete $pc11_saved{$key};
@@ -313,8 +313,17 @@ sub handle_11
 				}
 
 				++$pc11_to_61;
+
 				my $percent = $pc11_rx ? $pc11_to_61 * 100 / $pc11_rx : 0;
 				dbg(sprintf("PROMOTED $self->{call}: BETTER $pc->[0] $key, using pc61, WAITING pc11 DUMPED: $pc61_rx pc11: $pc11_rx better pc61: $pc11_to_61 (%0.1f%%)", $percent)) if isdbg("pc11");
+
+				delete $pc11_saved{$key}; # because we have promoted it, no longer needed.
+
+				# so unlike the promotion by route, there is a stored, but uncounted PC11
+				# which have discarded. But we have chosed to use better PC61 that's just come in
+				# so we allow the PC61 to be counted later, but count the now discarded PC11
+				# because it *did* come in.
+				++$pc11_rx;
 			} 
 		}
 
@@ -346,8 +355,9 @@ sub handle_11
 				dbg(sprintf("PROMOTED $self->{call}: ROUTE pc11 $key PROMOTED to pc61 with IP $spot[14] pc61: $pc61_rx pc11: $pc11_rx route->pc61 $rpc11_to_61 (%0.1f%%)", $percent)) if isdbg("pc11");
 				$line = join '^', @$pc, $hops, '~';
 
-				# update the stats
-				++$pc11_rx;		# 'cos we received it and it won't be a pc11 anymore
+				# update the stats (NOTE, thie record was a PC11, it has now become a PC61
+				# this is NOT the same choosing a better PC61, that is a separate record. 
+				++$pc11_rx;		# 'cos we received as a PC11 it and it won't be a pc11 anymore 
 				--$pc61_rx;		# 'cos we'll increment it later as it's now a pc61, no double counting
 				
 #				dbg("CHANGED saved key: $key PC11 line to $line") if isdbg('pc11');

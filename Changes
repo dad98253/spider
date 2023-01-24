@@ -1,3 +1,5 @@
+24Jan23=======================================================================
+1. Optimise the PC11->PC61 promotion code, improve readability of set/deb pc11
 20Jan23=======================================================================
 1. Add the variable @main::localhost_names to allow other IP addresses to
    be treated in the same way as localhost in item 1 on 19Jan23 below. NOTE

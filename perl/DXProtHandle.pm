@@ -168,7 +168,8 @@ sub handle_11
 		}
 	}
 
-	dbg("INPUT $self->{call}: $line origin $origin recurse: $recurse") if isdbg("pc11") || isdbg("pc61"); 
+	dbg("---") if isdbg("pc11") || isdbg("pc61"); 
+	dbg("INPUT $self->{call}: $line via: $origin recurse: $recurse") if isdbg("pc11") || isdbg("pc61"); 
 
 #	my ($hops) = $pc->[8] =~ /^H(\d+)/;
 
@@ -256,77 +257,100 @@ sub handle_11
 		}
 	}
 
+	# Populate the routing table
+	my $rn = Route::Node::get($pc->[7]);
+	unless ($rn) {
+		$rn = Route::Node->new($pc->[7]);
+		dbg("ROUTE $self->{call}: ADD NEW node: $pc->[7]") if isdbg('pc11');
+	}
+	my $r = Route::User::get($pc->[6]);
+	unless ($r) {
+		$rn->add_user($pc->[6], 0, undef);
+		dbg("ROUTE $self->{call}: ADD NEW user: $pc->[6] -> $pc->[7]") if isdbg('pc11');
+		$r = Route::User::get($pc->[6]);
+	}
+	
+	# Add/Change any IP address info
+	if ($pcno == 61) {
+
+		# as we have a route to a user, if it (or the node) does not exist then create them
+		# link the user to the node if not already done.
+		# then add or alter the IP address
+		if ($pc->[8]) {
+			my $new = $pc->[8];
+			if ($r) {
+				if ($r->ip ne $new) {
+					if ($r->ip) {
+						my $old = $r->ip;
+						$r->ip($new);
+						dbg("ROUTE $self->{call}: ALTER IP node: $pc->[7] user: $pc->[6] old IP: '$old'-> new IP: '$new'") if isdbg('pc11');
+					} else{
+						$r->ip($new);
+						dbg("ROUTE $self->{call}: NEW IP node: $pc->[7] user: $pc->[6] IP: '$new'") if isdbg('pc11');
+					}
+				}
+			} else {
+				dbg("ROUTE $self->{call}: ADD Failed for node $pc->[7] user $pc->[6]") if isdbg('pc11');
+			}
+		} else {
+			dbg("PCPROT: ROUTE $self->{call} NO IP ADDRESS in '$line'!");
+		}
+	}
 
 	# this is where we decide to delay PC11s in the hope that a PC61 will be along soon.
-	
 	my $key = join '|', @spot[0..2,4,7]; # not including text
 
 	unless ($recurse) {
-		if ($pcno == 61) {
-			if (Spot::dup_find(@spot[0..4,7])) {
-				dbg("DUPE $pc->[0] $self->{call}: key: $key dumped") if isdbg('pc11');
-				return;
-			} else {
-				++$pc61_rx;
-			}
 
-			# as we have a route to a user, if it does not exist, create and link if (and only if) the node exists as well
-			if ($pc->[8]) {
-				my $new = $pc->[8];
-				# $new =~ s/,/:/g;
-				my $r = Route::User::get($pc->[6]);
-				unless ($r) {
-					my $rn = Route::Node::get($pc->[7]) || Route::Node->new($pc->[7]);
-					$rn->add_user($pc->[6], 0, $pc->[8]);
-					$r = Route::User::get($pc->[6]);
-				}
-				if ($r) {
-					if ($r->ip ne $pc->[8]) {
-						my $old = $r->ip;
-						$r->ip($new);
-						dbg("ROUTE ALTER IP node: $pc->[7] user: $pc->[6] old IP: '$old'-> new IP: '$new'") if isdbg('pc11');
-					} else {
-						dbg("ROUTE NEW IP node: $pc->[7] user: $pc->[6] IP: '$new'") if isdbg('pc11');
-					}
-				} else {
-					dbg("ROUTE ADD Failed for node $pc->[7] user $pc->[6]") if isdbg('pc11');
-				}
-			}
+		if ($pcno == 61) {
 
 			if ($pc11_saved{$key}) {
+				# before we promote by route, check that it's not a dupe (but don't insert it).
+				if (Spot::dup_find(@spot[0..4,7])) {
+					dbg("PCPROT: Duplicate Spot  $self->{call}: $pc->[0] $key ignored\n") if isdbg('chanerr') || isdbg('dupespot') || isdbg('pc11');
+					delete $pc11_saved{$key};
+					return;
+				}
+
 				++$pc11_to_61;
 				my $percent = $pc11_rx ? $pc11_to_61 * 100 / $pc11_rx : 0;
-				dbg(sprintf("PROMOTED BETTER $self->{call}: $pc->[0] $key, using pc61, WAITING pc11 DUMPED: $pc61_rx pc11: $pc11_rx better pc61: $pc11_to_61 (%0.1f%%)", $percent)) if isdbg("pc11");
-				delete $pc11_saved{$key};
-			}
+				dbg(sprintf("PROMOTED $self->{call}: BETTER $pc->[0] $key, using pc61, WAITING pc11 DUMPED: $pc61_rx pc11: $pc11_rx better pc61: $pc11_to_61 (%0.1f%%)", $percent)) if isdbg("pc11");
+			} 
 		}
+
 		if ($pcno == 11) {
 
-			if (Spot::dup_find(@spot[0..4,7])) {
-				dbg("DUPE $pc->[0] $self->{call}: key: $key dumped") if isdbg('pc11');
-				return;
-			} else {
-				++$pc11_rx;
-			}
-
+			# if this fires then we have already had one or more PC11s but no PC61 for this spot
 			if ($pc11_saved{$key}) {
-				dbg("DUPE $pc->[0] $self->{call } key: $key is saved, ignored") if isdbg("pc11");
+				dbg("DUPE $self->{call} $pc->[0] key: $key is saved, ignored") if isdbg("pc11");
 				return;		# because it's a dup
 			}
 
-			# can we promote this to a PC61?
-			my $r = Route::User::get($spot[4]); # find spotter
+			# before we promote by route, check that it's not been preceded by a previous PC61
+			if (Spot::dup_find(@spot[0..4,7])) {
+				my $s = exists $pc11_saved{$key} ? " stored $key removed" : "";
+				dbg("PCPROT: Duplicate Spot $self->{call}: PC11$s, recurse: $recurse, ignored\n") if isdbg('chanerr') || isdbg('dupespot') || isdbg('pc11');
+				delete $pc11_saved{$key};
+				return;
+			}
 
-			if ($r && $r->ip) {	                # do we have an ip address
+
+			# If we have an ip address we can promote by route
+			if ($r && $r->ip) {
 				$pcno = 61;
 				$pc->[0] = 'PC61';
 				my $hops = $pc->[8];
 				$pc->[8] = $spot[14] = $r->ip;
 				++$rpc11_to_61;
 				my $percent = $pc11_rx ? $rpc11_to_61 * 100 / $pc11_rx : 0;
-				dbg(sprintf("PROMOTED ROUTE $self->{call}: pc11 $key PROMOTED to pc61 with IP $spot[14] pc61: $pc61_rx pc11: $pc11_rx route->pc61 $rpc11_to_61 (%0.1f%%)", $percent)) if isdbg("pc11");
+				dbg(sprintf("PROMOTED $self->{call}: ROUTE pc11 $key PROMOTED to pc61 with IP $spot[14] pc61: $pc61_rx pc11: $pc11_rx route->pc61 $rpc11_to_61 (%0.1f%%)", $percent)) if isdbg("pc11");
 				$line = join '^', @$pc, $hops, '~';
-				dbg("CHANGED saved key: $key PC11 line to $line") if isdbg('pc11');
+
+				# update the stats
+				++$pc11_rx;		# 'cos we received it and it won't be a pc11 anymore
+				--$pc61_rx;		# 'cos we'll increment it later as it's now a pc61, no double counting
+				
+#				dbg("CHANGED saved key: $key PC11 line to $line") if isdbg('pc11');
 				delete $pc11_saved{$key};
 			}
 
@@ -339,12 +363,13 @@ sub handle_11
 			}
 		}
 	}
-
-
 	
 	# this goes after the input filtering, but before the add
 	# so that if it is input filtered, it isn't added to the dup
 	# list. This allows it to come in from a "legitimate" source
+	#
+	## NOTE: this is where we insert the spot into the DXDupe cache
+	#
 	if (Spot::dup(@spot[0..4,7])) {
 		dbg("PCPROT: Duplicate Spot  $self->{call}: $pc->[0] $key ignored\n") if isdbg('chanerr') || isdbg('dupespot') || isdbg('pc11');
 		return;
@@ -352,7 +377,13 @@ sub handle_11
 
 	dbg("PROCESSING $self->{call}: $pc->[0] key: $key") if isdbg('pc11');
 	
-	# we check IP addresses for PC61 - this will also dedupe PC11 copies
+	if ($pcno == 11) {
+		++$pc11_rx;
+	} else {
+		++$pc61_rx;
+	}
+
+	# we check IP addresses for PC61 - this will also dedupe PC11 promotions
 	if (@$pc > 8 && is_ipaddr($pc->[8])) {
 		my $ip = $pc->[8];
 		$ip =~ s/,/:/g;
@@ -363,7 +394,6 @@ sub handle_11
 			return;
 		}
 	}
-
 	
 	# here we verify the spotter is currently connected to the node it says it is one. AKA email sender verify
 	# but without the explicit probe to the node. We are relying on "historical" information, but it very likely
@@ -492,18 +522,18 @@ sub handle_11
 	my $count =  $pc11_to_61+$rpc11_to_61;
 	my $percent = ($pc11_rx + $pc61_rx) ? ($pc11_rx * 100) / ($pc11_rx + $pc61_rx) : 0;
 	my $pc11_61 = $pc11_rx ? ($count * 100) / $pc11_rx : 0;
-	my $data = "$self->{call} $pc->[0] key: $key";
+	my $data = "$pc->[0] key: $key";
 	my $stats = sprintf "pc11: $pc11_rx pc61: $pc61_rx pc11%%: %0.1f%% pc11->pc61: $count(%0.1f%%)", $percent, $pc11_61;
 	if ($recurse) {
 		if ($pc11_saved{$key}) {
-			dbg("END RECURSED $data removed and finished $stats") if isdbg('pc11');
+			dbg("END $self->{call}: RECURSED $data removed and finished $stats") if isdbg('pc11');
 			delete $pc11_saved{$key};
 		} else {
-			dbg("END RECURSED $data finished $stats") if isdbg('pc11'); 
+			dbg("END $self->{call}: RECURSED NO KEY finished $stats") if isdbg('pc11'); 
 		}
 		$recurse = 0;
 	} else {
-		dbg("END NORMAL $data finished $stats") if isdbg('pc11');
+		dbg("END $self->{call}: NORMAL $data finished $stats") if isdbg('pc11');
 	}
 }
 
@@ -513,7 +543,8 @@ sub pc11_process
 	foreach my $key (keys %pc11_saved) {
 		my $r = $pc11_saved{$key};
 		if ($main::systime > $r->[0] + $pc11_dwell_time) {
-			dbg("RECURSE PC11 spot $key timed out waiting, resend") if isdbg("pc11");
+			dbg("---") if isdbg("pc11");
+			dbg("RECURSE $r->[1]->{call}: PC11 spot $key timed out waiting, resend") if isdbg("pc11");
 			my $self = $r->[1];
 			delete $pc11_saved{$key};
 			$self->handle_11(@$r[2..5], 1);
@@ -861,6 +892,7 @@ sub handle_18
 		$parent->version($version);
 		my ($build) = $pc->[1] =~ /Build: (\d+(?:\.\d+)?)/;
 		$build += 0;
+		$build = 0 unless $build > 1;
 		$self->{build} = $build;
 		$self->user->build($build);
 		$parent->build($build);
@@ -893,7 +925,7 @@ sub handle_18
 		$self->user->version($self->version);
 	}
 
-	if ($pc->[1] =~ /CC\*Cluster/i || $pc->[1] =~ /\bpc9x/i) {
+	if ($pc->[1] =~ /CC\s*Cluster/i || $pc->[1] =~ /\bpc9x/i) {
 		if ($self->{isolate}) {
 			dbg("$self->{call} pc9x recognised, but node is isolated, using old protocol");
 		} elsif (!$self->user->wantpc9x) {

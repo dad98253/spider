@@ -25,5 +25,4 @@ use vars qw(@listen);
 # This one!!!!!
 );
 
-$
 1;

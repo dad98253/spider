@@ -320,7 +320,7 @@ sub handle_11
 				delete $pc11_saved{$key}; # because we have promoted it, no longer needed.
 
 				# so unlike the promotion by route, there is a stored, but uncounted PC11
-				# which have discarded. But we have chosed to use better PC61 that's just come in
+				# which have discarded. But we have chosen to use better PC61 that's just come in
 				# so we allow the PC61 to be counted later, but count the now discarded PC11
 				# because it *did* come in.
 				++$pc11_rx;

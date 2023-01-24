@@ -225,6 +225,8 @@ our $localhost_alias_ipv6;		# for things (PC92, PC61 etc) that expose IP address
                                 # be set by Msg.pm stuff if they are left undefined but, if you need
                                 # certanty then set/var them in the startup file.
 
+our $save_route_cache;			# save and restore route cache on restart. Probably only useful for G1TLH testing
+
 use vars qw($version $subversion $build $gitversion $gitbranch);
 
 # send a message to call on conn and disconnect
@@ -471,7 +473,7 @@ sub cease
 	DXDb::closeall;
 
 	# Write route cache
-	Route::write_cache();
+	Route::write_cache() if $save_route_cache;
 	
 	# close all listeners
 	foreach my $l (@listeners) {
@@ -655,7 +657,7 @@ sub setup_start
 	}
 
 	# read any route cache there might be
-	Route::read_cache();
+	Route::read_cache() if $save_route_cache;
 	
 	# start listening for incoming messages/connects
 	dbg("starting listeners ...");

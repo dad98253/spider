@@ -2512,6 +2512,7 @@ sub handle_default
 	}
 }
 
+# does what it says on the tin..
 sub populate_routing_table
 {
 	my ($self, $node, $user, $ip) = @_;

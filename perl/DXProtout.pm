@@ -480,7 +480,7 @@ sub pc93
 	my $s = "PC93^$main::mycall^" . gen_pc9x_t() . "^$to^$from^$via^$line";
 	$s .= "^$origin" if $origin;
 	if ($ipaddr) {
-		$s .= ' ^' unless $origin;
+		$s .= '^' unless $origin;
 		$ipaddr =~ s/:/,/;
 		$s .= "^$ipaddr";
 	}

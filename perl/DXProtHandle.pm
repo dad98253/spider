@@ -49,7 +49,7 @@ use vars qw($pc11_max_age $pc23_max_age $last_pc50 $eph_restime $eph_info_restim
 			$eph_pc15_restime $pc9x_past_age $pc9x_dupe_age
 			$pc10_dupe_age $pc92_slug_changes $last_pc92_slug
 			$pc92Ain $pc92Cin $pc92Din $pc92Kin $pc9x_time_tolerance
-			$pc92filterdef $senderverify $pc11_dwell_time $pc11_extract_route $pc92_ad_enabled $pc92c_ipaddr_enable
+			$pc92filterdef $senderverify $pc11_dwell_time $pc11_extract_route $pc92_ad_enabled $pc92c_ipaddr_enabled
 		   );
 
 $pc9x_dupe_age = 60;			# catch loops of circular (usually) D records
@@ -2321,8 +2321,11 @@ sub handle_92
 		$self->route_pc16($pcall, undef, $parent, @pc16) if @pc16;
 	}
 
-	# broadcast it if we get here
-	$self->broadcast_route_pc9x($pcall, undef, $line, 0) unless !$pc92_ad_enabled && ($sort eq 'A' || $sort eq 'D');
+	# broadcast it if we get here (but not if it's an A or D record and pc92_ad_enabled isn't set;
+	if ($sort eq 'A' || $sort eq 'D') {
+		return unless $pc92_ad_enabled;
+	}
+	$self->broadcast_route_pc9x($pcall, undef, $line, 0);
 }
 
 # get all the routes for a thing, bearing in mind that the thing (e.g. a user)

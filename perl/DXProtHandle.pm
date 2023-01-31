@@ -2390,8 +2390,10 @@ sub handle_93
 	my $text = $pc->[6];
 	my $onode = uc $pc->[7];
 	my $ipaddr = $pc->[8];
-	
+
+	$onode = undef unless $onode && is_callsign($onode);
 	$onode //= $pcall;
+	$ipaddr = undef unless $ipaddr && is_ipaddr($ipaddr);
 
 	# this is catch loops caused by bad software ...
 	if (eph_dup("PC93|$from|$text|$onode", $pc10_dupe_age)) {
@@ -2513,7 +2515,7 @@ sub handle_default
 sub populate_routing_table
 {
 	my ($self, $node, $user, $ip) = @_;
-
+	
 	my $rn = Route::Node::get($node);
 	unless ($rn) {
 		$rn = Route::Node->new($node);

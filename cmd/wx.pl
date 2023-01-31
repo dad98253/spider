@@ -55,8 +55,10 @@ if ($drop) {
 	return (1, ());
 }
 
-Log('ann', $via ? $via : '*', $from, $line);
-$main::me->normal(DXProt::pc93($to, $from, $via, $line));
+my $ipaddr = DXCommandmode::alias_localhost($self->hostname || '127.0.0.1');
+
+Log('ann', $via ? $via : '*', $from, $line, $ipaddr);
+$main::me->normal(DXProt::pc93($to, $from, $via, $line, undef, $ipaddr));
 
 #DXChannel::broadcast_list("WX de $from <$t>: $line", 'wx', undef, @locals);
 #if ($to ne "LOCAL") {

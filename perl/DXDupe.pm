@@ -46,6 +46,7 @@ sub check
 
 sub find
 {
+	return 0 unless $_[0];
 	return $d{$_[0]};
 }
 
@@ -53,14 +54,19 @@ sub add
 {
 	my $s = shift;
 	my $t = shift || $main::systime + $default;
+	return unless $s;
+
 	$d{$s} = $t;
-	dbg(sprintf("DXDupe::add key: $s time: %s", ztime($t))) if isdbg('dxdupe');
+	dbg("DXDupe::add key: $s time: " . ztime($t)) if isdbg('dxdupe');
 }
 
 sub del
 {
 	my $s = shift;
-	dbg(sprintf("DXDupe::del key: $s time: %s", ztime($d{$s}))) if isdbg('dxdupe');
+	return unless $s;
+	
+	my $t = $d{$s};
+	dbg("DXDupe::del key: $s time: " . ztime($t)) if isdbg('dxdupe');
 	delete $d{$s};
 }
 

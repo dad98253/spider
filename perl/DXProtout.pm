@@ -19,7 +19,7 @@ use DXDebug;
 
 use strict;
 
-use vars qw($sentencelth $pc19_version $pc9x_nodupe_first_slot);
+use vars qw($sentencelth $pc19_version $pc9x_nodupe_first_slot $pc92c_ipaddr_enable);
 
 $sentencelth = 180;
 $pc9x_nodupe_first_slot = 1;
@@ -396,7 +396,8 @@ sub _gen_pc92
 	}
 	for (@_) {
 		$s .= '^' . _encode_pc92_call($_, $ext);
-		$ext = 0 unless $sort eq 'A';				# only the first slot has an ext.
+		$ext = 0 unless $sort eq 'A ';				# only the first slot has an ext except A
+		$ext = 2 if $pc92c_ipaddr_enable && $sort eq 'C';
 	}
 	return $s . '^H99^';
 }
@@ -433,7 +434,7 @@ sub pc92d
 # send a config
 sub pc92c
 {
-	return _gen_pc92('C', 1, @_);
+	return _gen_pc92('C', $pc92c_ipaddr_enable ? 2 : 1, @_);
 }
 
 # send a keep alive
@@ -472,11 +473,17 @@ sub pc93
 	my $via = shift || '*';			# *, node call
 	my $line = shift;			# the text
 	my $origin = shift;			# this will be present on proxying from PC10
+	my $ipaddr = shift;
 
 	$line = unpad($line);
 	$line =~ s/\^/~/g;		# remove any ^ characters
 	my $s = "PC93^$main::mycall^" . gen_pc9x_t() . "^$to^$from^$via^$line";
 	$s .= "^$origin" if $origin;
+	if ($ipaddr) {
+		$s .= ' ^' unless $origin;
+		$ipaddr =~ s/:/,/;
+		$s .= "^$ipaddr";
+	}
 	$s .= "^H99^";
 	return $s;
 }

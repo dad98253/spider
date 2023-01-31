@@ -68,8 +68,9 @@ if ($drop) {
 }
 
 #return (1, $self->msg('dup')) if $self->priv < 5 && AnnTalk::dup($from, $toflag, $line);
+my $ipaddr = DXCommandmode::alias_localhost($self->hostname || '127.0.0.1');
 Log('ann', $to, $from, $line);
-$main::me->normal(DXProt::pc93($to, $from, $via, $line));
+$main::me->normal(DXProt::pc93($to, $from, $via, $line, undef, $ipaddr));
 
 #DXChannel::broadcast_list("To $to de $from ($t): $line\a", 'ann', undef, @locals);
 #if ($to ne "LOCAL") {

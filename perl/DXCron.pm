@@ -19,12 +19,12 @@ use DXSubprocess;
 
 use strict;
 
-use vars qw{@crontab @lcrontab @scrontab $mtime $lasttime $lastmin};
+use vars qw{@crontab @lcrontab @scrontab $mtime $lasttime $lastmin $use_localtime};
 
 $mtime = 0;
 $lasttime = 0;
 $lastmin = 0;
-
+$use_localtime = 0;
 
 my $fn = "$main::cmd/crontab";
 my $localfn = "$main::localcmd/crontab";
@@ -67,7 +67,16 @@ sub cread
 	while (my $l = <$fh>) {
 		$line++;
 		chomp $l;
-		next if $l =~ /^\s*#/o or $l =~ /^\s*$/o;
+		next if $l =~ /^\s*#/ or $l =~ /^\s*$/;
+		if (my ($ts) = $l =~/^\s*LOCALE\s*=\s*(UTC|LOCAL)/i) {
+			$ts = uc $ts;
+			if ($ts eq 'UTC') {
+				$use_localtime = 0;
+			} elsif ($ts eq 'LOCAL') {
+				$use_localtime = 1;
+			}
+			dbg("DXCron: LOCALE set to $ts") if isdbg('cron');
+		}
 		my ($min, $hour, $mday, $month, $wday, $cmd) = $l =~ /^\s*(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(.+)$/;
 		next unless defined $min;
 		my $ref = bless {};
@@ -140,7 +149,12 @@ sub process
 	my $now = $main::systime;
 	return if $now-$lasttime < 1;
 	
-	my ($sec, $min, $hour, $mday, $mon, $wday) = (gmtime($now))[0,1,2,3,4,6];
+	my ($sec, $min, $hour, $mday, $mon, $wday);
+	if ($use_localtime) {
+		($sec, $min, $hour, $mday, $mon, $wday) = (localtime($now))[0,1,2,3,4,6];
+	} else {
+		($sec, $min, $hour, $mday, $mon, $wday) = (gmtime($now))[0,1,2,3,4,6];
+	}
 
 	# are we at a minute boundary?
 	if ($min != $lastmin) {
@@ -158,7 +172,8 @@ sub process
 				(!$cron->{wday} || grep $_ eq $wday, @{$cron->{wday}})	){
 				
 				if ($cron->{cmd}) {
-					dbg("cron: $min $hour $mday $mon $wday -> doing '$cron->{cmd}'") if isdbg('cron');
+					my $s = $use_localtime ? "LOCALTIME" : "UTC"; 
+					dbg("cron: $s $min $hour $mday $mon $wday -> doing '$cron->{cmd}'") if isdbg('cron');
 					eval $cron->{cmd};
 					dbg("cron: cmd error $@") if $@ && isdbg('cron');
 				}

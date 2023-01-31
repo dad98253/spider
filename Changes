@@ -1,3 +1,31 @@
+30Jan23=======================================================================
+1. Add ip addresses to outgoing PC93 messages
+2. Get rid of (some of?) the uninitialised warnings 
+3. Add the ability to set the (time) locale to UTC or LOCALTIME by adding 
+   the string LOCALE = UTC or LOCALE = LOCAL(TIME)? to your local crontab
+   
+   NOTE: this will affect ALL timings in both the system as well as your
+   local crontabs. Changing the LOCALE will make no difference to the system
+   crontab other than using localtime rather than UTC. Which is fine by me. 
+
+   You can see what crontab is doing and which LOCALE is in use by doing a
+   'set/debug cron' in a console and running a 'watchdbg cron' in another 
+   shell.
+25Jan23=======================================================================
+1. Add a switch to enable the routing of generated PC92 A/D records and also
+   prevent the rebroadcast of incoming ones.
+
+   set/var $DXProt::pc92_ad_enable 0 
+
+   to disable PC92 A/D records. 
+2. Add a switch to enable the addition of IP addresses to PC92 C records.
+
+   set/var $DXProt::pc92c_ipaddr_enable 1
+
+   to enable the addition of IP addresses to outgoing PC92 C records.
+
+   ## These two features are experimental, but will become the default if
+   ## some other changes and these are successful
 24Jan23=======================================================================
 1. Optimise the PC11->PC61 promotion code, improve readability of the 
    debugging when 'set/debug pc11' is active.

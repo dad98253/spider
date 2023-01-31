@@ -49,7 +49,7 @@ use vars qw($pc11_max_age $pc23_max_age $last_pc50 $eph_restime $eph_info_restim
 			$eph_pc15_restime $pc9x_past_age $pc9x_dupe_age
 			$pc10_dupe_age $pc92_slug_changes $last_pc92_slug
 			$pc92Ain $pc92Cin $pc92Din $pc92Kin $pc9x_time_tolerance
-			$pc92filterdef $senderverify $pc11_dwell_time $pc11_extract_route
+			$pc92filterdef $senderverify $pc11_dwell_time $pc11_extract_route $pc92_ad_enabled $pc92c_ipaddr_enable
 		   );
 
 $pc9x_dupe_age = 60;			# catch loops of circular (usually) D records
@@ -141,7 +141,9 @@ sub handle_10
 	}
 
 	# convert this to a PC93, coming from mycall with origin set and process it as such
-	$main::me->normal(pc93($to, $from, $via, $pc->[3], $pc->[6]));
+	my $ref = Route::get($pc->[6]);
+	my $ip = $ref->ip;
+	$main::me->normal(pc93($to, $from, $via, $pc->[3], $pc->[6]), $ip);
 }
 
 my %pc11_saved;					# delayed PC11s
@@ -258,42 +260,11 @@ sub handle_11
 	}
 
 	# Populate the routing table
-	my $rn = Route::Node::get($pc->[7]);
-	unless ($rn) {
-		$rn = Route::Node->new($pc->[7]);
-		dbg("ROUTE $self->{call}: ADD NEW node: $pc->[7]") if isdbg('pc11');
-	}
+	$self->populate_routing_table($pc->[7], $pc->[6], $pc->[8]);
 	my $r = Route::User::get($pc->[6]);
-	unless ($r) {
-		$rn->add_user($pc->[6], 0, undef);
-		dbg("ROUTE $self->{call}: ADD NEW user: $pc->[6] -> $pc->[7]") if isdbg('pc11');
-		$r = Route::User::get($pc->[6]);
-	}
-	
-	# Add/Change any IP address info
 	if ($pcno == 61) {
-
-		# as we have a route to a user, if it (or the node) does not exist then create them
-		# link the user to the node if not already done.
-		# then add or alter the IP address
-		if ($pc->[8]) {
-			my $new = $pc->[8];
-			if ($r) {
-				if ($r->ip ne $new) {
-					if ($r->ip) {
-						my $old = $r->ip;
-						$r->ip($new);
-						dbg("ROUTE $self->{call}: ALTER IP node: $pc->[7] user: $pc->[6] old IP: '$old'-> new IP: '$new'") if isdbg('pc11');
-					} else{
-						$r->ip($new);
-						dbg("ROUTE $self->{call}: NEW IP node: $pc->[7] user: $pc->[6] IP: '$new'") if isdbg('pc11');
-					}
-				}
-			} else {
-				dbg("ROUTE $self->{call}: ADD Failed for node $pc->[7] user $pc->[6]") if isdbg('pc11');
-			}
-		} else {
-			dbg("PCPROT: ROUTE $self->{call} NO IP ADDRESS in '$line'!");
+		unless ($pc->[8] && is_ipaddr($pc->[8])) {
+			dbg("PCPROT: ROUTE $self->{call} NO IP ADDRESS in '$line'!");	
 		}
 	}
 
@@ -2351,7 +2322,7 @@ sub handle_92
 	}
 
 	# broadcast it if we get here
-	$self->broadcast_route_pc9x($pcall, undef, $line, 0);
+	$self->broadcast_route_pc9x($pcall, undef, $line, 0) unless !$pc92_ad_enabled && ($sort eq 'A' || $sort eq 'D');
 }
 
 # get all the routes for a thing, bearing in mind that the thing (e.g. a user)
@@ -2418,7 +2389,9 @@ sub handle_93
 	my $via = uc $pc->[5];
 	my $text = $pc->[6];
 	my $onode = uc $pc->[7];
-	$onode = $pcall if @$pc <= 8;
+	my $ipaddr = $pc->[8];
+	
+	$onode //= $pcall;
 
 	# this is catch loops caused by bad software ...
 	if (eph_dup("PC93|$from|$text|$onode", $pc10_dupe_age)) {
@@ -2456,6 +2429,8 @@ sub handle_93
 			return;
 		}
 	}
+
+	$self->populate_routing_table($onode, $from, $ipaddr);
 
 	# if it is routeable then then treat it like a talk
 	my $ref = Route::get($to);
@@ -2531,6 +2506,50 @@ sub handle_default
 			unless ($self->{isolate}) {
 				DXChannel::broadcast_nodes($line, $self) if $line =~ /\^H\d+\^?~?$/; # send it to everyone but me
 			}
+		}
+	}
+}
+
+sub populate_routing_table
+{
+	my ($self, $node, $user, $ip) = @_;
+
+	my $rn = Route::Node::get($node);
+	unless ($rn) {
+		$rn = Route::Node->new($node);
+		dbg("ROUTE $self->{call}: ADD NEW node: $node") if isdbg('pc11');
+	}
+
+	my $ru;
+	if ($user ne $node) {
+		$ru = Route::User::get($user);
+		unless ($ru) {
+			$rn->add_user($user, 0, undef);
+			dbg("ROUTE $self->{call}: ADD NEW user: $user -> $node") if isdbg('pc11');
+		}
+		$ru = Route::User::get($user);
+	}
+	
+	# Add/Change any IP address info
+
+	# as we have a route to a user, if it (or the node) does not exist then create them
+	# link the user to the node if not already done.
+	# then add or alter the IP address
+	if ($ip && is_ipaddr($ip)) {
+		my $new = $ip;
+		if ($ru) {
+			if ($ru->ip ne $new) {
+				if ($ru->ip) {
+					my $old = $ru->ip;
+					$ru->ip($new);
+					dbg("ROUTE $self->{call}: ALTER IP node: $node user: $user old IP: '$old'-> new IP: '$new'") if isdbg('pc11');
+				} else{
+					$ru->ip($new);
+					dbg("ROUTE $self->{call}: NEW IP node: $node user: $user IP: '$new'") if isdbg('pc11');
+				}
+			}
+		} else {
+			dbg("ROUTE $self->{call}: ADD Failed for node $node user $user") if isdbg('pc11');
 		}
 	}
 }

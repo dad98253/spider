@@ -44,6 +44,7 @@ sub _read
 			chomp;
 			next if /^\s*\#/;
 			next unless /[\.:]/;
+			next unless $_;
 			push @out, $_;
 		}
 		$fh->close;

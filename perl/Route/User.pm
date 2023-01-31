@@ -103,7 +103,7 @@ sub TO_JSON { return { %{ shift() } }; }
 sub write_cache
 {
 	my $json = DXJSON->new;
-	$json->canonical(isdbg('routecache'));
+	$json->canonical(isdbg('routecache')||0);
 	
 	my $ta = [ gettimeofday ];
 	my @s;

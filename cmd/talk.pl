@@ -46,6 +46,8 @@ push @out, $self->msg('e7', $call) unless $dxchan;
 # default the 'via'
 #$via ||= '*';
 
+my $ipaddr = DXCommandmode::alias_localhost($self->hostname || '127.0.0.1');
+
 # if there is a line send it, otherwise add this call to the talk list
 # and set talk mode for command mode
 if ($line) {
@@ -55,7 +57,7 @@ if ($line) {
 		$self->badcount(($self->badcount||0) + @bad);
 		LogDbg('DXCommand', "$self->{call} swore: $line (with words:" . join(',', @bad) . ")");
 	} else {
-		$main::me->normal(DXProt::pc93($to, $self->call, $via, $line));
+		$main::me->normal(DXProt::pc93($to, $self->call, $via, $line, undef, $ipaddr));
 	}
 } else {
 	my $s = $to;
@@ -63,17 +65,17 @@ if ($line) {
 	my $ref = $self->talklist;
 	if ($ref) {
 		unless (grep { $_ eq $s } @$ref) {
-			$main::me->normal(DXProt::pc93($to, $self->call, $via, $self->msg('talkstart')));
+			$main::me->normal(DXProt::pc93($to, $self->call, $via, $self->msg('talkstart'), undef,  $ipaddr));
 			$self->state('talk');
 			push @$ref, $s;
 		}
 	} else { 
 		$self->talklist([ $s ]);
-		$main::me->normal(DXProt::pc93($to, $self->call, $via, $self->msg('talkstart')));
+		$main::me->normal(DXProt::pc93($to, $self->call, $via, $self->msg('talkstart'), undef, $ipaddr));
 		push @out, $self->msg('talkinst');
 		$self->state('talk');
 	}
-	Log('talk', $to, $from, '>' . ($via || ($dxchan && $dxchan->call) || '*'), $self->msg('talkstart'));
+	Log('talk', $to, $from, '>' . ($via || ($dxchan && $dxchan->call) || '*'), $self->msg('talkstart'), undef, $ipaddr);
 	push @out, $self->talk_prompt;
 }
 

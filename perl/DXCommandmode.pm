@@ -79,11 +79,11 @@ sub new
 	my $ipaddr = alias_localhost($self->hostname);
 	DXProt::_add_thingy($main::routeroot, [$call, 0, 0, 1, undef, undef, $ipaddr], );
 
-	# ALWAYS output the user
+	# ALWAYS output the user (except if the updates not enabled)
 	my $ref = Route::User::get($call);
 	if ($ref) {
 		$main::me->route_pc16($main::mycall, undef, $main::routeroot, $ref);
-		$main::me->route_pc92a($main::mycall, undef, $main::routeroot, $ref) unless $DXProt::pc92_slug_changes;
+		$main::me->route_pc92a($main::mycall, undef, $main::routeroot, $ref) unless $DXProt::pc92_slug_changes || ! $DXProt::pc92_ad_enable;
 	}
 
 	return $self;
@@ -454,7 +454,8 @@ sub send_chats
 
 	my $msgid = DXProt::nextchatmsgid();
 	$text = "#$msgid $text";
-	$main::me->normal(DXProt::pc93($target, $self->{call}, undef, $text));
+	my $ipaddr = alias_localhost($self->hostname || '127.0.0.1');
+	$main::me->normal(DXProt::pc93($target, $self->{call}, undef, $text, undef, $ipaddr));
 }
 
 sub special_prompt
@@ -669,7 +670,7 @@ sub disconnect
 
 		# issue a pc17 to everybody interested
 		$main::me->route_pc17($main::mycall, undef, $main::routeroot, $uref);
-		$main::me->route_pc92d($main::mycall, undef, $main::routeroot, $uref) unless $DXProt::pc92_slug_changes;
+		$main::me->route_pc92d($main::mycall, undef, $main::routeroot, $uref) unless $DXProt::pc92_slug_changes || ! $DXProt::pc92_ad_enable;
 	} else {
 		confess "trying to disconnect a non existant user $call";
 	}

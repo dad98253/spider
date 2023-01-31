@@ -50,7 +50,8 @@ use vars qw($pc11_max_age $pc23_max_age $last_pc50 $eph_restime $eph_info_restim
 			%pc92_find $pc92_find_timeout $pc92_short_update_period
 			$next_pc92_obs_timeout $pc92_slug_changes $last_pc92_slug
 			$pc92_extnode_update_period $pc50_interval
-			$pc92_keepalive_period $senderverify
+			$pc92_keepalive_period $senderverify $pc92_ad_enabled
+			$pc92c_ipaddr_enable
 		   );
 
 $pc11_max_age = 1*3600;			# the maximum age for an incoming 'real-time' pc11
@@ -84,8 +85,9 @@ $pc92_keepalive_period = 1*60*60;	# frequency of PC92 K (keepalive) records
 %pc92_find = ();				# outstanding pc92 find operations
 $pc92_find_timeout = 30;		# maximum time to wait for a reply
 $senderverify = 0;				# 1 = check spotter is on node it says it is and check ip address if available
-                                # 2 = do 1 and dump if check 
-
+;								# 2 = do 1 and dump if check
+$pc92_ad_enabled = 1;			# send pc92 A & D records.
+$pc92c_ipaddr_enable = 0;		# add the local ip address info to each callsign in a PC92 C
 
 @checklist =
 (
@@ -1421,12 +1423,13 @@ sub talk
 {
 	my ($self, $from, $to, $via, $line, $origin) = @_;
 
+	my $ipaddr = DXCommandmode::alias_localhost($self->hostname || '127.0.0.1');
 	if ($self->{do_pc9x}) {
-		$self->send(pc93($to, $from, $via, $line));
+		$self->send(pc93($to, $from, $via, $line, undef, $ipaddr));
 	} else {
 		$self->send(pc10($from, $to, $via, $line, $origin));
 	}
-	Log('talk', $to, $from, '>' . ($via || $origin || $self->call), $line) unless $origin && $origin ne $main::mycall;
+	Log('talk', $to, $from, '>' . ($via || $origin || $self->call), $line, $ipaddr) unless $origin && $origin ne $main::mycall;
 }
 
 # send it if it isn't the except list and isn't isolated and still has a hop count
@@ -1644,6 +1647,7 @@ sub route_pc92c
 	my $self = shift;
 	my $origin = shift;
 	my $line = shift;
+
 	broadcast_route_pc9x($self, $origin, \&pc92c, $line, 1, @_);
 }
 
@@ -1652,6 +1656,7 @@ sub route_pc92a
 	my $self = shift;
 	my $origin = shift;
 	my $line = shift;
+	return unless $pc92_ad_enabled;
 	broadcast_route_pc9x($self, $origin, \&pc92a, $line, 1, @_);
 }
 
@@ -1660,6 +1665,7 @@ sub route_pc92d
 	my $self = shift;
 	my $origin = shift;
 	my $line = shift;
+	return unless $pc92_ad_enabled;
 	broadcast_route_pc9x($self, $origin, \&pc92d, $line, 1, @_);
 }
 
@@ -1781,8 +1787,8 @@ sub import_chat
 				$via = '*' if $target eq 'ALL' || $target eq 'SYSOP';
 				Log('ann', $target, $main::mycall, $text);
 				AnnTalk::add_anncache('ann', $target, $main::mycall, $text);
-				
-				$main::me->normal(DXProt::pc93($target, $main::mycall, $via, $text));
+				my $ipaddr = DXCommandmode::alias_localhost($main::me->hostname || '127.0.0.1');
+				$main::me->normal(DXProt::pc93($target, $main::mycall, $via, $text, undef, $ipaddr));
 			} else {
 				DXCommandmode::send_chats($main::me, $target, $text);
 			}

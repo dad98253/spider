@@ -872,7 +872,7 @@ sub per_minute
 sub per_10_minute
 {
 	RBN::per_10_minute();
-	Route::write_cache();
+	Route::write_cache() if $save_route_cache;
 }
 
 sub per_hour

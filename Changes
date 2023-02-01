@@ -1,3 +1,7 @@
+01Feb23=======================================================================
+1. Harden DXCIDR (badip stuff) against format errors in downloaded badip files
+   downloaded using wget from the crontab. If these problems persist PLEASE 
+   TELL me and send me examples of the errors that end up in the badip files.
 30Jan23=======================================================================
 1. Add ip addresses to outgoing PC93 messages
 2. Get rid of (some of?) the uninitialised warnings 

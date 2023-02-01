@@ -38,13 +38,25 @@ sub _read
 	$fn .= ".$suffix" if $suffix;
 	my $fh = IO::File->new($fn);
 	my @out;
+	my $ecount;
+	my $line;
+	
 
 	if ($fh) {
 		while (<$fh>) {
 			chomp;
+			++$line;
 			next if /^\s*\#/;
 			next unless /[\.:]/;
 			next unless $_;
+			unless (is_ipaddr($_)) {
+				++$ecount;
+				LogDbg('err', qq(DXCIDR: $fn line $line: '$_' not an ip address));
+				if ($ecount > 10) {
+					LogDbg('err', qq(DXCIDR: More than 10 errors in $fn at/after line $line: '$_' - INVALID INPUT FILE));
+					return ();
+				}
+			}
 			push @out, $_;
 		}
 		$fh->close;
@@ -58,6 +70,7 @@ sub _load
 {
 	my $suffix = shift;
 	my @in = _read($suffix);
+	return 0 unless @in;
 	return scalar add(@in);
 }
 
@@ -112,6 +125,7 @@ sub add
 	
 	for my $ip (@_) {
 		# protect against stupid or malicious
+		next unless is_ipaddr($ip);
 		next if $ip =~ /^127\./;
 		next if $ip =~ /^::1$/;
 		if ($ip =~ /\./) {

@@ -21,6 +21,10 @@ if ($in[0] =~ /^[_\d\w]+$/) {
 return (1, "set/badip: need [suffix (def: local])] IP, IP-IP or IP/24") unless @in;
 for my $ip (@in) {
 	my $r;
+	unless (is_ipaddr($ip)) {
+		push @out, "set/badip: '$ip' is not an ip address, ignored";
+		next;
+	}
 	eval{ $r = DXCIDR::find($ip); };
 	return (1, "set/badip: $ip $@") if $@;
 	if ($r) {
@@ -34,6 +38,10 @@ my $count = @added;
 my $list = join ' ', @in;
 DXCIDR::clean_prep();
 #$DB::single = 1;
-DXCIDR::append($suffix, @added);
-push @out, "set/badip: added $count entries to badip.$suffix : $list" if $count;
+if ($count) {
+	DXCIDR::append($suffix, @added);
+	push @out, "set/badip: added $count entries to badip.$suffix : '$list'";
+} else {
+	push @out, "set/badip: No valid IPs, not updating badip.$suffix with '$list'";
+}
 return (1, @out);

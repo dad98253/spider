@@ -1,3 +1,10 @@
+03Feb23=======================================================================
+1. Fix is_ipaddr to accept trailing '::'  on IPV6 addresses.
+2. Fix and extend the TEST program 'showdx' so that it now works on the mojo
+   branch. Type 'showxd -?' for more information or read the source. This is 
+   NOT a user program, but is will accept most sh/dx expressions. 
+3. Fix create_master_badip_files.pl so that it does not emit IP addresses
+   that the system is_ipaddr() function fails.
 01Feb23=======================================================================
 1. Harden DXCIDR (badip stuff) against format errors in downloaded badip files
    downloaded using wget from the crontab. If these problems persist PLEASE 

@@ -863,9 +863,11 @@ sub handle_18
 	$self->state('init');
 
 	my $parent = Route::Node::get($self->{call});
-	
+
+	my ($software, $version, $build) = (undef, 0, 0);
+	 
 	# record the type and version offered
-	if (my ($software, $version) = $pc->[1] =~ /(DXSpider|CC\s*Cluster)\s+Version: (\d+(?:\.\d+)?)/i) {
+	if (($software, $version) = $pc->[1] =~ /(DXSpider|CC\s*Cluster)\s+Version: (\d+(?:\.\d+)?)/i) {
 		$version += 0;
 		$version += 53 if $version < 6;
 		$self->{version} = $version;
@@ -885,7 +887,7 @@ sub handle_18
 			$self->sort('S');
 		}
 #		$self->{handle_xml}++ if DXXml::available() && $pc->[1] =~ /\bxml/;
-	} elsif (my ($software, $version, $build) = $pc->[1] =~ /(AR-Cluster)\s+Version:\s+(\d+\.\d+).?(\d+\.\d+)?/) {
+	} elsif (($software, $version, $build) = $pc->[1] =~ /(AR-Cluster)\s+Version:\s+(\d+\.\d+).?(\d+\.\d+)?/) {
 		dbg("$self->{call} = $software version $version build $build");
 		$self->{version} = $version;
 		$self->user->version($version);

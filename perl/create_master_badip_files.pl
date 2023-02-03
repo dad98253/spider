@@ -33,6 +33,7 @@ use LWP::Simple;
 use JSON;
 use Date::Parse;
 use File::Copy;
+use DXUtil;
 
 DXDebug::dbginit();
 
@@ -69,6 +70,7 @@ my $data = decode_json($content);
 my $now = time;
 my $ecount = 0;
 my $rcount = 0;
+my $error = 0;
 
 my $rand = rand;
 open RELAY, ">$relayfn.$rand" or die "$0: cannot open $relayfn $!";
@@ -85,25 +87,35 @@ foreach my $e (@{$data->{relays}}) {
 	my $es = join ', ', @exit;
 	dbg "$0: $e->{nickname} $e->{last_seen} relays: [$ors] exits: [$es]" if $debug;
 	for (@or) {
-		print RELAY "$_\n";
-		++$rcount;
+		if (is_ipaddr($_)) {
+			print RELAY "$_\n";
+			++$rcount;
+		} else {
+			print STDERR "$_\n";
+			++$error;
+		}
 	}
 	for (@exit) {
-		print EXIT "$_\n";
-		++$ecount;
+		if (is_ipaddr($_)) {
+			print EXIT "$_\n";
+			++$ecount;
+		} else {
+			print STDERR "$_\n";
+			++$error;
+		}
 	}
 }
 
 close RELAY;
 close EXIT;
 
-dbg("$0: $rcount relays $ecount exits found");
+dbg("$0: $rcount relays $ecount exits $error error(s) found.");
 move "$relayfn.$rand", $relayfn if $rcount;
 move "$exitfn.$rand", $exitfn if $ecount;
 unlink "$relayfn.$rand";
 unlink "$exitfn.$rand";
 
-exit 0;
+exit $error;
 
 sub clean_addr
 {

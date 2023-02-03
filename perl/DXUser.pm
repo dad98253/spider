@@ -132,6 +132,8 @@ sub AUTOLOAD
        goto &$AUTOLOAD;
 }
 
+my $readonly;
+
 #use strict;
 
 #
@@ -161,6 +163,8 @@ sub init
 			$dbm = tie (%u, 'DB_File', $filename, O_RDONLY, 0666, $DB_BTREE) or confess "can't open user file: $fn ($!) [rebuild it from user_json?]";
 		}
 	}
+	$readonly = !$mode;
+	
 	die "Cannot open $filename ($!)\n" unless $dbm || $mode == 2;
 	return;
 }
@@ -190,7 +194,7 @@ sub process
 
 sub finish
 {
-	dbg('DXUser finished');
+	dbg('DXUser finished') unless $readonly;
 	$dbm->sync;
 	undef $dbm;
 	untie %u;
@@ -982,7 +986,7 @@ sub recover
 sub END
 {
 	if ($dbm) {
-		print "DXUser Ended\n";
+		print "DXUser Ended\n" unless $readonly;
 		finish();
 	}
 }

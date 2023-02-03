@@ -1030,41 +1030,45 @@ sub format_dx_spot
 	$c =~ s/\t/ /g;
 	my $comment = substr (($c || ''), 0, $clth);
 	$comment .= ' ' x ($clth - (length($comment)));
+
+	if ($self->{user}) {		# to allow the standalone program 'showdx' to work
+		if (!$slot1 && $self->{user}->wantgrid) {
+			my $ref = DXUser::get_current($_[1]);
+			if ($ref && $ref->qra) {
+				$slot1 = ' ' . substr($ref->qra, 0, 4);
+			}
+		}
+		if (!$slot1 && $self->{user}->wantusstate) {
+			$slot1 = " $_[12]" if $_[12];
+		}
+		unless ($slot1) {
+			if ($self->{user}->wantdxitu) {
+				$slot1 = sprintf(" %2d", $_[8]) if defined $_[8]; 
+			}
+			elsif ($self->{user}->wantdxcq) {
+				$slot1 = sprintf(" %2d", $_[9]) if defined $_[9];
+			}
+		}
+		$comment = substr($comment, 0,  $clth-length($slot1)) . $slot1 if $slot1;
 	
-    if (!$slot1 && $self->{user}->wantgrid) {
-		my $ref = DXUser::get_current($_[1]);
-		if ($ref && $ref->qra) {
-			$slot1 = ' ' . substr($ref->qra, 0, 4);
+		if (!$slot2 && $self->{user}->wantgrid) {
+			my $origin = $_[4];
+			$origin =~ s/-#$//;	# sigh......
+			my $ref = DXUser::get_current($origin);
+			if ($ref && $ref->qra) {
+				$slot2 = ' ' . substr($ref->qra, 0, 4);
+			}
 		}
-	}
-	if (!$slot1 && $self->{user}->wantusstate) {
-		$slot1 = " $_[12]" if $_[12];
-	}
-	unless ($slot1) {
-		if ($self->{user}->wantdxitu) {
-			$slot1 = sprintf(" %2d", $_[8]) if defined $_[8]; 
-		} elsif ($self->{user}->wantdxcq) {
-			$slot1 = sprintf(" %2d", $_[9]) if defined $_[9];
+		if (!$slot2 && $self->{user}->wantusstate) {
+			$slot2 = " $_[13]" if $_[13];
 		}
-	}
-	$comment = substr($comment, 0,  $clth-length($slot1)) . $slot1 if $slot1;
-	
-    if (!$slot2 && $self->{user}->wantgrid) {
-		my $origin = $_[4];
-		$origin =~ s/-#$//;			# sigh......
-		my $ref = DXUser::get_current($origin);
-		if ($ref && $ref->qra) {
-			$slot2 = ' ' . substr($ref->qra, 0, 4);
-		}
-	}
-	if (!$slot2 && $self->{user}->wantusstate) {
-		$slot2 = " $_[13]" if $_[13];
-	}
-	unless ($slot2) {
-		if ($self->{user}->wantdxitu) {
-			$slot2 = sprintf(" %2d", $_[10]) if defined $_[10]; 
-		} elsif ($self->{user}->wantdxcq) {
-			$slot2 = sprintf(" %2d", $_[11]) if defined $_[11]; 
+		unless ($slot2) {
+			if ($self->{user}->wantdxitu) {
+				$slot2 = sprintf(" %2d", $_[10]) if defined $_[10]; 
+			}
+			elsif ($self->{user}->wantdxcq) {
+				$slot2 = sprintf(" %2d", $_[11]) if defined $_[11]; 
+			}
 		}
 	}
 

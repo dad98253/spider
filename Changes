@@ -1,3 +1,7 @@
+04Feb23=======================================================================
+1. Fixed sh/log so that callsigns beginning with a digit (or several) are 
+   printed rather than being ignored.
+   This affects: show/ann, chat, log, rcmd and wx
 03Feb23=======================================================================
 1. Fix is_ipaddr to accept trailing '::'  on IPV6 addresses.
 2. Fix and extend the TEST program 'showdx' so that it now works on the mojo

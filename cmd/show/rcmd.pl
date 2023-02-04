@@ -27,7 +27,7 @@ while ($f = shift @f) {                 # next field
 		next if $to;
 	}
 	next if $who;
-	if ($f !~ /^\d+/) {
+	if ($f !~ /^\d+$/) {
 		($who) = $f;
 	}
 }

@@ -1,7 +1,7 @@
 #
 # print out the general log file for chat only
 #
-# Copyright (c) 1998-2003 - Dirk Koopman G1TLH
+# Copyright (c) 1998-2023 - Dirk Koopman G1TLH
 #
 #
 #
@@ -28,7 +28,7 @@ while ($f = shift @f) {                 # next field
 		next if $to;
 	}
 	next if $who;
-	if ($f !~ /^\d+/) {
+	if ($f !~ /^\d+$/) {
 		($who) = $f;
 	}
 #	($who) = $f =~ /^(\w+)/o;

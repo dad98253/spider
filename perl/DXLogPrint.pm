@@ -18,7 +18,7 @@ use DXLog;
 use Julian;
 
 
-our $readback = 1;
+our $readback = $main::is_win ? 0 : 1;
 if ($readback) {
 	$readback = `which tac`;
 } 

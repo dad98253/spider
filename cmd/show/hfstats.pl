@@ -57,7 +57,7 @@ sub handle
 #	@out = $self->spawn_cmd("show/hfstats $line", sub {
 #							});
 
-	if ($self->{_nospawn}) {
+	if ($self->{_nospawn} || $main::is_win == 1) {
 		return (1, generate($self, $days, $now, $today));
 	}
 	else {

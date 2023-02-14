@@ -37,7 +37,7 @@ while ($f = shift @f) {                 # next field
 $to = 20 unless $to;
 $from = 0 unless $from;
 
-if ($self->{_nospawn}) {
+if ($self->{_nospawn} || $main::is_win == 1) {
 	@out = DXLog::print($from, $to, $main::systime, 'chat', $who);
 } else {
 	@out = $self->spawn_cmd("show/chat $cmdline", \&DXLog::print, args => [$from, $to, $main::systime, 'chat', $who]);

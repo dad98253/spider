@@ -17,7 +17,7 @@ sub handle
 
 	my @out;
 
-	if ($self->{_nospawn}) {
+	if ($self->{_nospawn} || $main::is_win == 1) {
 		return (1, generate($self));
 	} else {
 		return (1, $self->spawn_cmd("show/isolate $line", sub { return (generate($self)); }));

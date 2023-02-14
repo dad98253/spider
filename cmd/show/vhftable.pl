@@ -71,7 +71,7 @@ sub handle
 		$now = Julian::Day->new(time); #no starting date
 		$date = cldate(time);
 	}
-	if ($self->{_nospawn}) {
+	if ($self->{_nospawn} || $main::is_win == 1) {
 		@out = generate($self);
 	}
 	else {

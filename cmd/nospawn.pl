@@ -21,8 +21,8 @@ if ($self->remotecmd || $self->inscript) {
 }
 
 Log('DXCommand', "nospawn '$line' by $mycall");
-$self->{_nospawn} = 1;
+++$self->{_nospawn};
 my @out = $self->run_cmd($line);
-delete $self->{_nospawn};
+$self->{_nospawn} = 0 if exists $self->{_nospawn} && --$self->{_nospawn} <= 0;
 
 return (1, @out);

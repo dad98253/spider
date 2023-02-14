@@ -103,7 +103,7 @@
 	 }
 
 
-	 if ($self->{_nospawn}) {
+	 if ($self->{_nospawn} || $main::is_win == 1) {
 		 @out = generate($self);
 	 } else {
 		 @out = $self->spawn_cmd("show/hftable $line", sub { return (generate($self)); });

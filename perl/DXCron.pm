@@ -311,7 +311,7 @@ sub spawn_cmd
 			 sub {
 				 my ($fc, $err, @res) = @_; 
 				 --$main::me->{_nospawn};
-				 delete $main::me->{_nospawn} if exists $main::me->{_nospawn} && $main::me->{_nospawn} <= 0;
+				 $main::me->{_nospawn} = 0 if exists $main::me->{_nospawn} && $main::me->{_nospawn} <= 0;
 				 if ($err) {
 					 my $s = "DXCron::spawn_cmd: error $err";
 					 dbg($s);

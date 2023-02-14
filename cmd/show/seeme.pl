@@ -22,7 +22,7 @@ sub handle
 		$line = "\U\Q$line";
 	}
 
-	if ($self->{_nospawn}) {
+	if ($self->{_nospawn} || $main::is_win == 1) {
 		@out = generate($self, $line);
 	} else {
 		@out = $self->spawn_cmd("show/seeme $line", sub { return (generate($self, $line)); });

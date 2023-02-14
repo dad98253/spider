@@ -35,6 +35,6 @@ while ($f = shift @f) {                 # next field
 $to = 20 unless $to;
 $from = 0 unless $from;
 
-return (1, DXLog::print($from, $to, $main::systime, 'rcmd', $who)) if $self->{_nospawn};
+return (1, DXLog::print($from, $to, $main::systime, 'rcmd', $who)) if ($self->{_nospawn} || $main::is_win == 1);
 return (1, $self->spawn_cmd("show/rcmd $cmdline", \&DXLog::print, args => [$from, $to, $main::systime, 'rcmd', $who]));
 

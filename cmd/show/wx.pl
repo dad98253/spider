@@ -28,7 +28,7 @@ while ($f = shift @f) {                 # next field
 $to = 20 unless $to;
 $from = 0 unless $from;
 
-if ($self->{_nospawn}) {
+if ($self->{_nospawn} || $main::is_win == 1) {
 	@out = $self->spawn_cmd("show/wx $cmdline", \&DXLog::print, args => [$from, $to, $main::systime, 'ann', 'WX']);
 } else {
 	@out = DXLog::print($from, $to, $main::systime, 'ann', 'WX');

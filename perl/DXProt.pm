@@ -1234,7 +1234,7 @@ sub spawn_cmd
 	my $fc = DXSubprocess->new;
 
 	# just behave normally if something has set the "one-shot" _nospawn in the channel
-	if ($self->{_nospawn}) {
+	if ($self->{_nospawn} || $main::is_win == 1) {
 		eval { @out = $cmdref->(@$args); };
 		if ($@) {
 			DXDebug::dbgprintring(25);

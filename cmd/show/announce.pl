@@ -49,7 +49,7 @@ if (!$who && !$from && $to < @AnnTalk::anncache) {
 	return (1, @out);
 }
 
-return (1, DXLog::print($from, $to, $main::systime, 'ann', $who)) if $self->{_nospawn} || $DB::VERSION;
+return (1, DXLog::print($from, $to, $main::systime, 'ann', $who)) if ($self->{_nospawn} || $main::is_win == 1) || $DB::VERSION;
 return (1, $self->spawn_cmd("show/announce $cmdline", \&DXLog::print, args => [$from, $to, $main::systime, 'ann', $who]));
 	
 return (1, @out);

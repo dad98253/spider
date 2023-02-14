@@ -20,7 +20,7 @@ sub handle
 	}
 	$to = 500 unless $to;
 
-	if ($self->{_nospawn}) {
+	if ($self->{_nospawn} || $main::is_win == 1) {
 		return (1, doit($self, DXLog::print(undef, $to, $main::systime, 'chat', undef)));
 	}
 	return (1, $self->spawn_cmd("show/groups $to", \&DXLog::print, args => [0, $to, $main::systime, 'chat', undef], cb => \&doit));

@@ -73,7 +73,7 @@ our %spotcache;					# the cache of data within the last $spotcachedays 0 or 2+ d
 our $spotcachedays = 2;			# default 2 days worth
 our $minselfspotqrg = 1240000;	# minimum freq above which self spotting is allowed
 
-our $readback = 1;
+our $readback = $main::is_win ? 0 : 1;
 
 if ($readback) {
 	$readback = `which tac`;

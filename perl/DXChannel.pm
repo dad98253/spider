@@ -175,6 +175,7 @@ sub alloc
 	$self->{lang} = $main::lang if !$self->{lang};
 	$self->{func} = "";
 	$self->{width} ||=  80;
+	$self->{_nospawn} = 0;
 
 	# add in all the dxcc, itu, zone info
 	my @dxcc = Prefix::extract($call);

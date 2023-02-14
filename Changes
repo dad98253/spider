@@ -1,3 +1,17 @@
+14Feb23=======================================================================
+1. Attempt to be more M$ Windows compatible. This basically is to do with the
+   unfortunate fact that most of the Windows perl cannot do, or simulate 
+   spawning (running another process in parallel) and/or Mojolicious cannot
+   handle coping with one or more versions of these simulations. 
+
+   I don't have a windows perl available to me at moment so I can only
+   simulate running under windows by setting a variable.
+
+   You need to know that running any version of DXSpider on Windows will do
+   all long running commands in line. Much as the 'master' branch does. So
+   running large nodes on Windows boxes with versions of perl that do not
+   support running spawned processes continues to be contra-indicated. Much 
+   as it has ALWAYS been. 
 04Feb23=======================================================================
 1. Fixed sh/log so that callsigns beginning with a digit (or several) are 
    printed rather than being ignored.

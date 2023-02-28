@@ -81,24 +81,24 @@ foreach my $e (@{$data->{relays}}) {
 	my $seen = str2time($e->{last_seen});
 	next unless $seen >= $now - $last_seen_window;
 	
-	my @or = clean_addr(@{$e->{or_addresses}}) if exists $e->{or_addresses};
 	my @exit = clean_addr(@{$e->{exit_addresses}}) if exists $e->{exit_addresses} ;
+	my @or = clean_addr(@{$e->{or_addresses}}) if exists $e->{or_addresses};
 	my $ors = join ', ', @or;
 	my $es = join ', ', @exit;
 	dbg "$0: $e->{nickname} $e->{last_seen} relays: [$ors] exits: [$es]" if $debug;
-	for (@or) {
+	for (@exit) {
 		if (is_ipaddr($_)) {
-			print RELAY "$_\n";
-			++$rcount;
+			print EXIT "$_\n";
+			++$ecount;
 		} else {
 			print STDERR "$_\n";
 			++$error;
 		}
 	}
-	for (@exit) {
+	for (@or) {
 		if (is_ipaddr($_)) {
-			print EXIT "$_\n";
-			++$ecount;
+			print RELAY "$_\n";
+			++$rcount;
 		} else {
 			print STDERR "$_\n";
 			++$error;
@@ -117,17 +117,25 @@ unlink "$exitfn.$rand";
 
 exit $error;
 
+my %addr;
+
 sub clean_addr
 {
 	my @out;
 	foreach (@_) {
 		my ($ipv4) = /^((?:\d+\.){3}\d+)/;
 		if ($ipv4) {
+			next if exists $addr{$ipv4};
 			push @out, $ipv4;
+			$addr{$ipv4}++;
 			next;
 		}
 		my ($ipv6) = /^\[([:a-f\d]+)\]/;
-		push @out, $ipv6 if $ipv6;
+		if ($ipv6) {
+			next if exists $addr{$ipv6};
+			push @out, $ipv6;
+			$addr{$ipv6}++;
+		}
 	}
 	return @out;
 }

@@ -3,6 +3,8 @@
 2. Add CTY-3308 prefixes.
 3. Fix gen_usdb_data.pl (add missing use DXUtil), update current location of
    official FCC databases.
+4. Remove the duplicate IP addresses across exits and relays from badip lists
+   during generation by create_master_badip_files.pl.
 14Feb23=======================================================================
 1. Attempt to be more M$ Windows compatible. This basically is to do with the
    unfortunate fact that most of the Windows perl cannot do, or simulate 

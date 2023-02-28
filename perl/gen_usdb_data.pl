@@ -6,17 +6,17 @@
 #
 # You can get the main database from: 
 #
-#   http://wireless.fcc.gov/uls/data/complete/l_amat.zip
+#   https://data.fcc.gov/download/pub/uls/complete/l_amat.zip
 #
 # The daily data bases are available as a set of seven from here:-
 #
-#   http://wireless.fcc.gov/uls/data/daily/l_am_sat.zip 
-#   http://wireless.fcc.gov/uls/data/daily/l_am_sun.zip 
-#   http://wireless.fcc.gov/uls/data/daily/l_am_mon.zip 
-#   http://wireless.fcc.gov/uls/data/daily/l_am_tue.zip 
-#   http://wireless.fcc.gov/uls/data/daily/l_am_wed.zip 
-#   http://wireless.fcc.gov/uls/data/daily/l_am_thu.zip 
-#   http://wireless.fcc.gov/uls/data/daily/l_am_fri.zip
+#  https://data.fcc.gov/download/pub/uls/daily/l_am_sat.zip 
+#  https://data.fcc.gov/download/pub/uls/daily/l_am_sun.zip 
+#  https://data.fcc.gov/download/pub/uls/daily/l_am_mon.zip 
+#  https://data.fcc.gov/download/pub/uls/daily/l_am_tue.zip 
+#  https://data.fcc.gov/download/pub/uls/daily/l_am_wed.zip 
+#  https://data.fcc.gov/download/pub/uls/daily/l_am_thu.zip 
+#  https://data.fcc.gov/download/pub/uls/daily/l_am_fri.zip
 # 
 # this program expects one or more zip files containing the call book
 # data as arguments.
@@ -48,6 +48,7 @@ use Archive::Zip qw(:ERROR_CODES);
 use Archive::Zip::MemberRead;
 use IO::File;
 use Compress::Zlib;
+use DXUtil;
 
 my $blksize = 1024 * 1024;
 

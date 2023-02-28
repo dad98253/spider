@@ -1,6 +1,6 @@
 ! $Id$
 !
-! This file was created by Jim Reisert AD1C on 17 Jan 2023
+! This file was created by Jim Reisert AD1C on 27 Feb 2023
 ! See: https://www.country-files.com/dx-cluster/wpxloc/
 !
 ! Highest DXCC number is 359 ("VERSION" entity)
@@ -1720,7 +1720,7 @@ I Friuli-Venezia-Giulia-IV3                            85 28 15  -1.00 46  4  0 
 IX1 Valle-D'Aosta-I                                    85 28 15  -1.00 45 44  0 N   7 20  0 E
 I Valle-D'Aosta-IX1                                    85 28 15  -1.00 45 44  0 N   7 20  0 E
 IS Sardinia-IS                                         86 28 15  -1.00 40  9  0 N   9 16  0 E @
-IM0,IW0U,IW0V,IW0W,IW0X,IW0Y,IW0Z Sardinia-IS          86 28 15  -1.00 40  9  0 N   9 16  0 E
+IM0,IS0,IW0U,IW0V,IW0W,IW0X,IW0Y,IW0Z Sardinia-IS      86 28 15  -1.00 40  9  0 N   9 16  0 E
 J2 Djibouti-J2                                         88 48 37  -3.00 11 45  0 N  42 21  0 E @
 J3 Grenada-J3                                          90 11  8   4.00 12  8  0 N  61 41  0 W @
 J5 Guinea-Bissau-J5                                    91 46 35   0.00 12  1  0 N  14 48  0 W @

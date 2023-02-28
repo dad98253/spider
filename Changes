@@ -1,3 +1,6 @@
+28Feb23=======================================================================
+1. Default ip addresses ON in PC92 C records, disable PC92 A D record output.
+2. Add CTY-3308 prefixes.
 14Feb23=======================================================================
 1. Attempt to be more M$ Windows compatible. This basically is to do with the
    unfortunate fact that most of the Windows perl cannot do, or simulate 

@@ -1,3 +1,5 @@
+01Mar23=======================================================================
+1. Revert PC92 A D and PC92 C record flags back to defaults
 28Feb23=======================================================================
 1. Default ip addresses ON in PC92 C records, disable PC92 A D record output.
 2. Add CTY-3308 prefixes.

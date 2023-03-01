@@ -20,7 +20,7 @@ use Data::Dumper;
 use QSL;
 use DXSql;
 use Time::HiRes qw(gettimeofday tv_interval);
-
+use Math::Round qw(nearest nearest_floor);
 
 use strict;
 
@@ -73,7 +73,11 @@ our %spotcache;					# the cache of data within the last $spotcachedays 0 or 2+ d
 our $spotcachedays = 2;			# default 2 days worth
 our $minselfspotqrg = 1240000;	# minimum freq above which self spotting is allowed
 
-our $readback = $main::is_win ? 0 : 1;
+our $readback = $main::is_win ? 0 : 1; # don't read spot files backwards if it's windows
+our $qrggranularity = 100000;	# normalise the qrg to this number of hz (default: 100khz), so tough luck if you have a fumble fingers moment
+our $timegranularity = 600;		# ditto to the nearest second 
+our $oldstyle = 0;				# revert to traditional dupe key format
+
 
 if ($readback) {
 	$readback = `which tac`;
@@ -481,7 +485,9 @@ sub dup
 	# dump if too old
 	return 2 if $d < $main::systime - $dupage;
 
-		# turn the time into minutes (should be already but...)
+	my $nd = nearest_floor($d, $timegranularity);
+
+	# turn the time into minutes (should be already but...)
 	$d = int ($d / 60);
 	$d *= 60;
 
@@ -490,6 +496,7 @@ sub dup
 	
 #	$freq = sprintf "%.1f", $freq;       # normalise frequency
 	$freq = int $freq;       # normalise frequency
+	my $qrg = nearest_floor($freq, $qrggranularity); # to the nearest however many hz
 	$call = substr($call, 0, $maxcalllth) if length $call > $maxcalllth;
 
 	chomp $text;
@@ -501,7 +508,7 @@ sub dup
 	$text =~ s/\s{2,}[\dA-Z]?[A-Z]\d?$// if length $text > 24;
 	$text =~ s/[\W\x00-\x2F\x7B-\xFF]//g; # tautology, just to make quite sure!
 	$text = substr($text, 0, $duplth) if length $text > $duplth; 
-	my $ldupkey = "X$|$call|$by|$node|$freq|$d|$text";
+	my $ldupkey = $oldstyle ? "X|$call|$by|$node|$freq|$d|$text" : "X|$call|$by|$qrg|$nd|$text";
 
 	my $t = DXDupe::find($ldupkey);
 	return 1 if $t && $t - $main::systime > 0;
@@ -510,7 +517,7 @@ sub dup
 	$otext = substr($otext, 0, $duplth) if length $otext > $duplth; 
 	$otext =~ s/\s+$//;
 	if (length $otext && $otext ne $text) {
-		$ldupkey = "X$freq|$call|$by|$otext";
+		$ldupkey = $oldstyle ? "X|$freq|$call|$by|$otext" : "X|$qrg|$call|$by|$otext";
 		$t = DXDupe::find($ldupkey);
 		return 1 if $t && $t - $main::systime > 0;
 		DXDupe::add($ldupkey, $main::systime+$dupage) unless $just_find;

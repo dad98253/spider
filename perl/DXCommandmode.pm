@@ -50,6 +50,7 @@ use DXCIDR;
 use strict;
 use vars qw(%Cache %cmd_cache $errstr %aliases $scriptbase %nothereslug
 	$maxbadcount $msgpolltime $default_pagelth $cmdimportdir $users $maxusers
+    $maxcmdlth
 );
 
 %Cache = ();					# cache of dynamically loaded routine's mod times
@@ -63,6 +64,8 @@ $cmdimportdir = "$main::root/cmd_import"; # the base directory for importing com
                                           # this does not exist as default, you need to create it manually
 $users = 0;					  # no of users on this node currently
 $maxusers = 0;				  # max no users on this node for this run
+
+$maxcmdlth = 512;				# max length of incoming cmd line (including the command and any arguments
 
 #
 # obtain a new connection this is derived from dxchannel
@@ -534,15 +537,15 @@ sub run_cmd
 		
 	if ($cmd) {
 
-		# check cmd
-		if ($cmd =~ m|^/| || $cmd =~ m|[^-?\w/]|) {
+		# strip out // on command only
+		$cmd =~ s|//+|/|g;
+
+		# check for length of whole command line and any invalid characters
+		if (length $cmdline > $maxcmdlth || $cmd =~ m|\.| || $cmd !~ m|^\w+(?:/\w+){0,1}$|) {
 			LogDbg('DXCommand', "cmd: $self->{call} - invalid characters in '$cmd'");
-			return $self->_error_out('e1');
+			return $self->_error_out('e40');	
 		}
 
-		# strip out // on command only
-		$cmd =~ s|//|/|g;
-					
 		my ($path, $fcmd);
 			
 		dbg("cmd: $cmd") if isdbg('command');

@@ -135,7 +135,7 @@ $count = 0;
 		  wx => '0,Want WX,yesno',		  
 		 );
 
-$maxerrors = 20;				# the maximum number of concurrent errors allowed before disconnection
+$maxerrors = 5;				# the maximum number of concurrent errors allowed before disconnection
 
 # object destruction
 sub DESTROY

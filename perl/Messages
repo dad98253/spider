@@ -76,7 +76,7 @@ package DXM;
 				dxituu => q{DX ITU Zones disabled for $_[0]},
 				dxs => q{DX Spots enabled for $_[0]},
 				dxu => q{DX Spots disabled for $_[0]},
-				e1 => q{Invalid command},
+				e1 => q{Unknown command},
 				e2 => q{Error: $_[0]},
 				e3 => q{$_[0]: $_[1] not found},
 				e4 => q{Need at least a prefix or callsign},
@@ -115,6 +115,7 @@ package DXM;
 				e37 => q{Need at least a callsign},
 				e38 => q{This is not a valid regex},
 				e39 => q{Sorry $_[0] is not a valid argument},
+				e40 => q{Cmd too long or has invalid characters},
 
 				echoon => q{Echoing enabled},
 				echooff => q{Echoing disabled},

@@ -541,7 +541,7 @@ sub run_cmd
 		$cmd =~ s|//+|/|g;
 
 		# check for length of whole command line and any invalid characters
-		if (length $cmdline > $maxcmdlth || $cmd =~ m|\.| || $cmd !~ m|^\w+(?:/\w+){0,1}$|) {
+		if (length $cmdline > $maxcmdlth || $cmd =~ m|\.| || $cmd !~ m|^\w+(?:/\w+){0,1}(?:/\d+)?$|) {
 			LogDbg('DXCommand', "cmd: $self->{call} - invalid characters in '$cmd'");
 			return $self->_error_out('e40');	
 		}

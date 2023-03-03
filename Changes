@@ -1,3 +1,7 @@
+03Mar23=======================================================================
+1. Fix DXDebug::DXDebug not found errors in rarely used functions. This is 
+   also an interaction with differing versions of Mojolicious. Clearly this 
+   has never happened to me (sigh).
 02Mar23=======================================================================
 1. Fix sh/dx/30 problem. I.e. allow old style version of sh/dx 30.  
 01Mar23=======================================================================

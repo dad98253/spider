@@ -69,12 +69,12 @@ if (!defined $DB::VERSION) {
 		exit(-1); 
 	}
 	sub carp { 
-        DXDebug::dbgprintring(25) if DXDebug('nologchan');
+        DXDebug::dbgprintring(25) if DXDebug::isdbg('nologchan');
 #        DXDebug::dbg(Carp::shortmess(\@_)); 
         DXDebug::longmess(\@_);
     }
 	sub cluck { 
-        DXDebug::dbgprintring(25) if DXDebug('nologchan');
+        DXDebug::dbgprintring(25) if DXDebug::isdbg('nologchan');
 #        DXDebug::dbg(Carp::longmess(\@_)); 
         DXDebug::longmess(\@_);
     } );

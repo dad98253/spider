@@ -2,6 +2,10 @@
 1. Fix DXDebug::DXDebug not found errors in rarely used functions. This is 
    also an interaction with differing versions of Mojolicious. Clearly this 
    has never happened to me (sigh).
+2. Allow non-privileged users to use ping (no arguments) and get 'PONG nn' 
+   where nn is an incrementing counter or if there is an argument it will 
+   return 'PONG <argument>' - all in UPPER CASE. See help ping for more
+   details. 
 02Mar23=======================================================================
 1. Fix sh/dx/30 problem. I.e. allow old style version of sh/dx 30.  
 01Mar23=======================================================================

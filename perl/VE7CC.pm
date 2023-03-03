@@ -47,7 +47,7 @@ sub dx_spot
 		my $loc = $ref->qra || '';
 		$loc_spotter = substr($loc, 0, 4) if $loc;
 	}
-	my $text = $_[4];
+	my $text = $_[4] || '';
 	$text =~ s/\^/~/g;
 	
 	return sprintf("CC11^%0.1f^%s^", $freq, $spotted) . join('^', cldate($t), ztime($t), @_[0..3], $text, @_[5..10], $spotted_cc, $spotter_cc, $loc_spotted, $loc_spotter);

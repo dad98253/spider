@@ -1,3 +1,18 @@
+04Mar23=======================================================================
+1. Fixed regression caused by too many command errors in (startup) script
+   files. This is caused by much stricter checking of commands entered both 
+   by users AND scripts. If there more concurrent errors ie. greater than
+   $DXChannel::maxerrors (default 10) then that user will be disconnected.
+
+   Unfortunately this could include the $mycall (node) channel if there were
+   too many command users in the startup script. The example I looked at had
+   a load of HTML pasted into it.  
+   
+   For various reasons the only manifestation of this problem was that pings
+   no longer worked. 
+
+   This has been fixed. I am grateful to Fulvio HB9DHG for letting me break
+   his node for an hour or so until I worked out what was going on.  
 03Mar23=======================================================================
 1. Fix DXDebug::DXDebug not found errors in rarely used functions. This is 
    also an interaction with differing versions of Mojolicious. Clearly this 

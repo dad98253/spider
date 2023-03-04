@@ -33,6 +33,8 @@ use DXDebug;
 use Filter;
 use Prefix;
 use Route;
+use DXLog;
+
 
 use strict;
 use vars qw(%channels %valid @ISA $count $maxerrors);
@@ -124,6 +126,7 @@ $count = 0;
 		  talk => '0,Want Talk,yesno',
 		  talklist => '0,Talk List,parray',
 		  user => '9,DXUser ref',
+		  user_interval => '0,Prompt Idle Time',
 		  ve7cc => '0,VE7CC program special,yesno',
 		  verified => '9,Verified?,yesno',
 		  version => '1,Node Version',
@@ -135,7 +138,7 @@ $count = 0;
 		  wx => '0,Want WX,yesno',		  
 		 );
 
-$maxerrors = 5;				# the maximum number of concurrent errors allowed before disconnection
+$maxerrors = 10;				# the maximum number of concurrent errors allowed before disconnection
 
 # object destruction
 sub DESTROY
@@ -204,12 +207,13 @@ sub _error_out
 {
 	my $self = shift;
 	my $e = shift;
-	if (++$self->{errors} > $maxerrors) {
+	if ($self != $main::me && ++$self->{errors} > $maxerrors) {
 		$self->send($self->msg('e26'));
+		LogDbg('err', "DXChannel $self->{call}: too many errors ($self->{errors} > $maxerrors), disconnecting");
 		$self->disconnect;
 		return ();
 	} else {
-		return ($self->msg($e));
+		return ($e ? $self->msg($e) : '');
 	}
 }
 

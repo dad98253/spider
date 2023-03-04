@@ -252,6 +252,7 @@ sub start
 	}
 
 	$self->lastmsgpoll($main::systime);
+	$self->{user_interval} = $self->user->user_interval || $main::user_interval; # allow user to change idle time between prompts
 	$self->prompt;
 }
 
@@ -543,7 +544,7 @@ sub run_cmd
 		# check for length of whole command line and any invalid characters
 		if (length $cmdline > $maxcmdlth || $cmd =~ m|\.| || $cmd !~ m|^\w+(?:/\w+){0,1}(?:/\d+)?$|) {
 			LogDbg('DXCommand', "cmd: $self->{call} - invalid characters in '$cmd'");
-			return $self->_error_out('e40');	
+			return $self->_error_out('e40');
 		}
 
 		my ($path, $fcmd);
@@ -588,7 +589,7 @@ sub run_cmd
 				return $self->_error_out('e1');
 			}
 		} else {
-			dbg("cmd: $cmd not found") if isdbg('command');
+			LogDbg('DXCommand', "$self->{call} cmd: '$cmd' not found");
 			return $self->_error_out('e1');
 		}
 	}
@@ -597,11 +598,7 @@ sub run_cmd
 	if ($ok) {
 		delete $self->{errors};
 	} else {
-		if (++$self->{errors} > $DXChannel::maxerrors) {
-			$self->send($self->msg('e26'));
-			$self->disconnect;
-			return ();
-		}
+		return $self->_error_out('e26');
 	}
 	return map {s/([^\s])\s+$/$1/; $_} @ans;
 }
@@ -627,7 +624,7 @@ sub process
 		}
 		
 		# send a prompt if no activity out on this channel
-		if ($t >= $dxchan->t + $main::user_interval) {
+		if ($t >= $dxchan->t + $dxchan->{user_interval}) {
 			$dxchan->prompt() if $dxchan->{state} =~ /^prompt/o;
 			$dxchan->t($t);
 		}

@@ -85,6 +85,7 @@ my $json;
 		  rbnseeme => '0,RBN See Me,yesno',
 		  registered => '9,Registered?,yesno',
 		  startt => '0,Start Time,cldatetime',
+		  user_interval => '0,Prompt IdleTime',
 		  version => '1,Version',
 		  wantann => '0,Req Announce,yesno',
 		  wantann_talk => '0,Talklike Anns,yesno',

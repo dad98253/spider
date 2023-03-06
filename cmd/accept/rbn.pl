@@ -11,4 +11,5 @@ my $type = 'accept';
 my $sort  = 'rbn';
 
 my ($r, $filter, $fno) = $RBN::filterdef->cmd($self, $sort, $type, $line);
-return (1, $r ? $filter : $self->msg('filter1', $fno, $filter->{name})); 
+my $ok = $r ? 0 : 1;
+return ($ok, $r ? $filter : $self->msg('filter1', $fno, $filter->{name})); 

@@ -578,7 +578,7 @@ sub difft
 	$t -= $h * 3600;
 	$m = int $t / 60;
 	$out .= sprintf ("%s${m}m", $adds?' ':'') if $m;
-	if ($d == 0 && $adds || $adds == 2) {
+	if (($d == 0 && $adds) || (int $adds && $adds == 2)) {
 		$s = int $t % 60;
 		$out .= sprintf ("%s${s}s", $adds?' ':'') if $s;
 		$out ||= sprintf ("%s0s", $adds?' ':'');

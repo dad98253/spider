@@ -598,7 +598,11 @@ sub run_cmd
 	if ($ok) {
 		delete $self->{errors};
 	} else {
-		return $self->_error_out('e26');
+		if (++$self->{errors} > $DXChannel::maxerrors) {
+			$self->send($self->msg('e26'));
+			$self->disconnect;
+			return ();
+		}
 	}
 	return map {s/([^\s])\s+$/$1/; $_} @ans;
 }

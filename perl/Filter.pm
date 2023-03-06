@@ -559,7 +559,7 @@ sub parse
 				}
 				return (1, $dxchan->msg('e20', $lasttok)) unless $found;
 			} else {
-				my $s = '{' . decode_regex($tok) . '}' if $tok =~ /^{.*}$/;
+				$s = $tok =~ /^{.*}$/ ? '{' . decode_regex($tok) . '}' : $tok;
 				return (1, $dxchan->msg('filter2', $s));
 			}
 			$lasttok = $tok;
@@ -606,8 +606,8 @@ sub cmd
 
 	$filter->{$fn}->{$type}->{user} = $user;
 	$filter->{$fn}->{$type}->{asc} = $s;
-	$r = $filter->compile($fn, $type);
-	return (1,$r) if $r;
+	$r = $filter->compile($fn, $type);   # NOTE: returns an ERROR, therefore 0 = success
+	return (0,$r) if $r;
 	
 	$r = $filter->write;
 	return (1,$r) if $r;

@@ -1,3 +1,8 @@
+06Mar23=======================================================================
+1. Fix filter error reporting, including incrementing concurrent error count 
+   if there are actually any detected parse errors.
+2. Fix warnings on difft.
+3. Add the origin of any incoming SP if it is emailed to the recipient.
 04Mar23=======================================================================
 1. Fixed regression caused by too many command errors in (startup) script
    files. This is caused by much stricter checking of commands entered both 

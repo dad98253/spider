@@ -485,7 +485,7 @@ sub notify
 			my $fromaddr = $email_from || $main::myemail;
 			my @headers = ("To: $ref->{to}", 
 						   "From: $fromaddr",
-						   "Subject: [DXSpider: $ref->{from}] $ref->{subject}", 
+						   "Subject: [DXSpider: $ref->{from}\@$ref->{origin}] $ref->{subject}", 
 						   "X-DXSpider-To: $ref->{to}",
 						   "X-DXSpider-From: $ref->{from}\@$ref->{origin}", 
 						   "X-DXSpider-Gateway: $main::mycall"

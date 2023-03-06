@@ -3,6 +3,8 @@
    if there are actually any detected parse errors.
 2. Fix warnings on difft.
 3. Add the origin of any incoming SP if it is emailed to the recipient.
+4. Oops I accidently restored one path of the node being disconnected that I
+   fixed below (because of changes to filtering). 
 04Mar23=======================================================================
 1. Fixed regression caused by too many command errors in (startup) script
    files. This is caused by much stricter checking of commands entered both 

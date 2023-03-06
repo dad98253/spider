@@ -598,7 +598,7 @@ sub run_cmd
 	if ($ok) {
 		delete $self->{errors};
 	} else {
-		if (++$self->{errors} > $DXChannel::maxerrors) {
+		if ($self != $main::me && ++$self->{errors} > $DXChannel::maxerrors) {
 			$self->send($self->msg('e26'));
 			$self->disconnect;
 			return ();

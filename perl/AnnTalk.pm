@@ -47,7 +47,6 @@ our @anncache;
 sub init
 {
 	my $t0 = [gettimeofday];
-	dbg("AnnTalk: loading up to $maxcache announcements into cache");
 	@anncache = DXLog::search(0, $maxcache, $main::systime, 'ann');
 	shift @anncache while @anncache > $maxcache;
 	my $l = @anncache;

@@ -65,7 +65,6 @@ sub init
 	do "$param" if -e "$param";
 	# read in existing data
 	my $t0 = [gettimeofday];
-	dbg(sprintf "WWV read in upto %d records into cache", $maxcache);	
 	@cache = readfile($main::systime);
 	shift @cache while @cache > $maxcache;	
 	dbg(sprintf "WWV read in last %d records into cache in %dmS", scalar @cache, _diffms($t0));	

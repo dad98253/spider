@@ -193,7 +193,6 @@ sub init
 	if ($spotcachedays > 0) {
 		my $t0 = [gettimeofday];
 		$spotcachedays = 2 if $spotcachedays < 2;
-		dbg "Spot::init - reading in $spotcachedays days of spots into cache"; 
 		for (my $i = 0; $i < $spotcachedays; ++$i) {
 			my $now = $today->sub($i);
 			my $fh = $fp->open($now);

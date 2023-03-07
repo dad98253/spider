@@ -734,10 +734,11 @@ sub setup_start
 
 
 	# initialise the Geomagnetic data engine
-	dbg("Start WWV");
+	dbg("Start WWV system");
 	Geomag->init();
-	dbg("Start WCY");
+	dbg("Start WCY system");
 	WCY->init();
+	dbg("Start Announce and Talk system");
 	AnnTalk::init();			# initialise announce cache
    
 
@@ -757,24 +758,26 @@ sub setup_start
 	Spot->init();
 
 	# read in any existing message headers and clean out old crap
-	dbg("reading existing message headers ...");
+	dbg("Reading existing Message/Bulletine headers ...");
 	DXMsg->init();
 	DXMsg::clean_old();
 
 	# read in any cron jobs
-	dbg("reading cron jobs ...");
+	dbg("Reading cron jobs ...");
 	DXCron->init();
 
 	# read in database desriptors
-	dbg("reading database descriptors ...");
+	dbg("Reading database descriptors ...");
 	DXDb::load();
 
-	dbg("starting RBN ...");
+	dbg("Rtarting RBN ...");
 	RBN::init();
 
 	# starting local stuff
-	dbg("doing local initialisation ...");
+	dbg("Starting DXQsl system");
 	QSL::init(1);
+
+	dbg("Ooing local initialisations ...");
 	if (defined &Local::init) {
 		eval {
 			Local::init();
@@ -784,7 +787,7 @@ sub setup_start
 
 
 	# this, such as it is, is the main loop!
-	dbg("orft we jolly well go ...");
+	dbg("Orft we jolly well go ...");
 
 	#open(DB::OUT, "|tee /tmp/aa");
 }

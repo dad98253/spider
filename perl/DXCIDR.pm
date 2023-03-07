@@ -162,9 +162,10 @@ sub _sort
 	my @in;
 	my @out;
 	for (@_) {
-		push @in, [inet_pton(m|:|?AF_INET6:AF_INET, $_), split m|/|];
+		my @ip = split m|/|;
+		push @in, [inet_pton(m|:|?AF_INET6:AF_INET, $ip[0]), @ip];
 	}
-	@out = sort {$a->[0] <=> $b->[0]} @in;
+	@out = sort {$a->[1] cmp $b->[1]} @in;
 	return map { "$_->[1]/$_->[2]"} @out;
 }
 

@@ -76,7 +76,7 @@ if (is_freq($f[1]) && $f[0] =~ m{^[\w\d]+(?:/[\w\d]+){0,2}$}) {
 }
 $line =~ s/^\s*$f[0]//;
 $line =~ s/^\s*$f[1]//;
-$line =~ unpad($line);
+$line = unpad($line);
 $line =~ s/\t+/ /g;				# do this here because it needs to be stopped ASAP!
 $line ||= ' ';
 

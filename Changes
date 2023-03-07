@@ -1,3 +1,6 @@
+07Mar23=======================================================================
+1. Fix odd (and old) regression dx command (line ending 59+++) '++' being the 
+   culprit.
 06Mar23=======================================================================
 1. Fix filter error reporting, including incrementing concurrent error count 
    if there are actually any detected parse errors.

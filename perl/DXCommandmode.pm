@@ -602,7 +602,7 @@ sub run_cmd
 			$self->send($self->msg('e26'));
 			$self->disconnect;
 			return ();
-		}
+		} 
 	}
 	return map {s/([^\s])\s+$/$1/; $_} @ans;
 }
@@ -882,7 +882,6 @@ sub find_cmd_name {
 		
 		if (isdbg('eval')) {
 			my @list = split /\n/, $eval;
-			my $line;
 			for (@list) {
 				dbg($_ . "\n") if isdbg('eval');
 			}

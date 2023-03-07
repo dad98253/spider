@@ -16,6 +16,7 @@ use DXDebug;
 use DXDupe;
 use DXLog;
 use DXLogPrint;
+use Time::HiRes qw(gettimeofday tv_interval);
 
 use vars qw(%dup $duplth $dupage $filterdef);
 
@@ -45,10 +46,12 @@ our @anncache;
 
 sub init
 {
+	my $t0 = [gettimeofday];
+	dbg("AnnTalk: loading up to $maxcache announcements into cache");
 	@anncache = DXLog::search(0, $maxcache, $main::systime, 'ann');
 	shift @anncache while @anncache > $maxcache;
 	my $l = @anncache;
-	dbg("AnnTalk: loaded last $l announcements into cache");
+	dbg("AnnTalk: loaded last $l announcements into cache in " . _diffms($t0) . "mS");
 }
 
 sub add_anncache

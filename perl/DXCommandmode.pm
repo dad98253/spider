@@ -349,22 +349,26 @@ sub normal
 			}
 			$self->state('prompt');
 			delete $self->{talklist};
-		} elsif ($cmdline =~ m|^/+\w+|) {
+		} elsif ($cmdline =~ m|^[/\w\\]+|) {
 			$cmdline =~ s|^/||;
 			my $sendit = $cmdline =~ s|^/+||;
 			if (@bad = BadWords::check($cmdline)) {
 				$self->badcount(($self->badcount||0) + @bad);
 				LogDbg('DXCommand', "$self->{call} swore: '$cmdline' with badwords: '" . join(',', @bad) . "'");
 			} else {
-				my @in = $self->run_cmd($cmdline);
-				$self->send_ans(@in);
-				if ($sendit && $self->{talklist} && @{$self->{talklist}}) {
-					foreach my $l (@in) {
-						for (@{$self->{talklist}}) {
-							if ($self->{state} eq 'talk') {
-								$self->send_talks($_, $l);
-							} else {
-								send_chats($self, $_, $l)
+				my @cmd = split /\s*\\n\s*/, $cmdline;
+				foreach my $l (@cmd) {
+					my @in = $self->run_cmd($l);
+					$self->send_ans(@in);
+					if ($sendit && $self->{talklist} && @{$self->{talklist}}) {
+						foreach my $l (@in) {
+							for (@{$self->{talklist}}) {
+								if ($self->{state} eq 'talk') {
+									$self->send_talks($_, $l);
+								}
+								else {
+									send_chats($self, $_, $l)
+								}
 							}
 						}
 					}
@@ -410,8 +414,11 @@ sub normal
 #		if (@bad = BadWords::check($cmdline)) {
 #			$self->badcount(($self->badcount||0) + @bad);
 #			LogDbg('DXCommand', "$self->{call} swore: '$cmdline' with badwords: '" . join(',', @bad) . "'");
-#		} else {
-			$self->send_ans(run_cmd($self, $cmdline));
+		#		} else {
+		my @cmd = split /\s*\\n\s*/, $cmdline;
+		foreach my $l (@cmd) {
+			$self->send_ans(run_cmd($self, $l));
+		}
 #		}
 	} 
 

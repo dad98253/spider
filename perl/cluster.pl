@@ -633,9 +633,6 @@ sub setup_start
 
 	Filter::init();				# doesn't do much, but has to be done
 
-	AnnTalk::init();			# initialise announce cache
-	
-	
 
 	# look for the sysop and the alias user and complain if they aren't there
 	{
@@ -727,12 +724,6 @@ sub setup_start
 	dbg("Read in Aliases");
 	CmdAlias->init();
 
-	# initialise the Geomagnetic data engine
-	dbg("Start WWV");
-	Geomag->init();
-	dbg("Start WCY");
-	WCY->init();
-
 	# initialise the protocol engine
 	dbg("Start Protocol Engines ...");
 	DXProt->init();
@@ -740,6 +731,15 @@ sub setup_start
 	# read startup script
 	my $script = new Script "startup";
 	$script->run($main::me) if $script;
+
+
+	# initialise the Geomagnetic data engine
+	dbg("Start WWV");
+	Geomag->init();
+	dbg("Start WCY");
+	WCY->init();
+	AnnTalk::init();			# initialise announce cache
+   
 
 	# put in a DXCluster node for us here so we can add users and take them away
 	$routeroot = Route::Node->new($mycall, $version*100+5300, Route::here($main::me->here)|Route::conf($main::me->conf));

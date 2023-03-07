@@ -17,6 +17,7 @@ use Julian;
 use IO::File;
 use DXDebug;
 use DXDupe;
+use Time::HiRes qw(gettimeofday tv_interval);
 
 use strict;
 
@@ -63,9 +64,11 @@ sub init
 	$fp = DXLog::new('wwv', 'dat', 'm');
 	do "$param" if -e "$param";
 	# read in existing data
+	my $t0 = [gettimeofday];
+	dbg(sprintf "WWV read in upto %d records into cache", $maxcache);	
 	@cache = readfile($main::systime);
 	shift @cache while @cache > $maxcache;	
-	dbg(sprintf "WWV read in last %d records into cache", scalar @cache);	
+	dbg(sprintf "WWV read in last %d records into cache in %dmS", scalar @cache, _diffms($t0));	
 	confess $@ if $@;
 }
 

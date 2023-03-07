@@ -1,6 +1,14 @@
 07Mar23=======================================================================
 1. Fix odd (and old) regression dx command (line ending 59+++) '++' being the 
    culprit.
+2. Allow multiple commands on one line when separated with the 2 character 
+   string '\n' (sigh). 
+3. Move a few init things about on startup so that more parameters are 
+   scriptable. 
+4. Put some debug comments before loading various caches (that might take a
+   longgggg time) and then tell people how long each cache load took. This
+   should reduce the worry that something is "wrong" when there is a delay
+   (such as searching for announces). 
 06Mar23=======================================================================
 1. Fix filter error reporting, including incrementing concurrent error count 
    if there are actually any detected parse errors.

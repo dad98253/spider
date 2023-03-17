@@ -945,7 +945,7 @@ sub check_add_user
 			$user->node($homenode);
 			$user->priv(0);
 		}
-		$user->lastin($main::systime); # this make it last longer than just this invocation
+		$user->lastin($main::systime); # this makes it last longer than just this invocation
 		$user->put;				# just to make sure it gets written away!!!
 		dbg("DXProt: PC92 new user record for $call created");
 	}
@@ -1032,6 +1032,12 @@ sub handle_19
 			next;
 		}
 
+		if ($call eq $main::myalias) {
+			LogDbg('err', "ROUTE: $call eq \$myalias from $self->{call}, ignored!!!");
+			dbgprintring(3) if isdbg('nologchan');
+			next;
+		}
+		
 		my $user = check_add_user($call, 'A');
 
 #		if (eph_dup($genline)) {
@@ -1807,7 +1813,12 @@ sub _add_thingy
 				$user->del if $user;
 			    $call = $normcall; # this is safe because a route add will ignore duplicates
 			}
-			
+
+			if ($call eq $main::myalias && $is_node) {
+				LogDbg('err', "ROUTE: $call eq \$myalias from $ncall - downgraded to user!!!");
+				dbgprintring(3) if isdbg('nologchan');
+				$is_node = 0;
+			}
 			if ($is_node) {
 				dbg("ROUTE: added node $call to $ncall") if isdbg('routelow');
 				$user = check_add_user($call, 'A');
@@ -2249,7 +2260,9 @@ sub handle_92
 				dbg("PCPROT: $self->{call} : type $sort $_->[0] refers to me, ignored") if isdbg('route');
 				next;
 			}
-			if ($_->[0] eq $main::myalias && $_->[1] || $_->[0] eq $main::mycall && $_->[1] == 0) {
+
+			my $isnode = ($_->[1] | $_->[2]);
+			if (($_->[0] eq $main::myalias && $isnode) || ($_->[0] eq $main::mycall && !$isnode)) {
 				LogDbg('err',"PCPROT: $self->{call} : type $sort $_->[0] trying to change type to " . $_->[1]?"Node":"User" . ", ignored");
 				next;
 			}

@@ -552,12 +552,6 @@ sub setup_start
 	# log our path
 	dbg "Perl path: " . join(':', @INC);
 	
-	# try to load the database
-	if (DXSql::init($dsn)) {
-		$dbh = DXSql->new($dsn);
-		$dbh = $dbh->connect($dsn, $dbuser, $dbpass) if $dbh;
-	}
-
 	# try to load Encode and Git
 	{
 		local $^W = 0;
@@ -600,6 +594,36 @@ sub setup_start
 		$SIG{__DIE__} = $w;
 	}
 
+	unless ($is_win) {
+		$SIG{HUP} = 'IGNORE';
+		$SIG{CHLD} = sub { $zombies++ };
+
+		$SIG{PIPE} = sub { 	dbg("Broken PIPE signal received"); };
+		$SIG{IO} = sub { 	dbg("SIGIO received"); };
+		$SIG{WINCH} = $SIG{STOP} = $SIG{CONT} = 'IGNORE';
+		$SIG{KILL} = 'DEFAULT';	# as if it matters....
+
+		# catch the rest with a hopeful message
+		for (keys %SIG) {
+			if (!$SIG{$_}) {
+				#		dbg("Catching SIG $_") if isdbg('chan');
+				$SIG{$_} = sub { my $sig = shift;	DXDebug::confess("Caught signal $sig");  };
+			}
+		}
+	}
+
+
+	# banner
+	my ($year) = (gmtime)[5];
+	$year += 1900;
+	LogDbg('cluster', "DXSpider v$version build $build (git: $gitbranch/$gitversion) using perl $^V on $^O started");
+	LogDbg('cluster', "Copyright (c) 1998-$year Dirk Koopman G1TLH");
+	LogDbg('cluster', "Capabilities: ve7cc rbn");
+
+	# prime some signals
+	unless ($DB::VERSION) {
+		$SIG{INT} = $SIG{TERM} = sub { $ending = 10; };
+	}
 
 	# setup location of motd & issue
 	localdata_mv($motd);
@@ -610,12 +634,6 @@ sub setup_start
 	# try to load XML::Simple
 	DXXml::init();
 
-	# banner
-	my ($year) = (gmtime)[5];
-	$year += 1900;
-	LogDbg('cluster', "DXSpider v$version build $build (git: $gitbranch/$gitversion) using perl $^V on $^O started");
-	LogDbg('cluster', "Copyright (c) 1998-$year Dirk Koopman G1TLH");
-	LogDbg('cluster', "Capabilities: ve7cc rbn");
 
 	# load Prefixes
 	dbg("loading prefixes ...");
@@ -683,35 +701,6 @@ sub setup_start
 	dbg("UDP Listener") if $UDPMsg::enable;
 	UDPMsg::init(\&new_channel);
 
-	# load bad words
-	BadWords::load();
-
-	# prime some signals
-	unless ($DB::VERSION) {
-		$SIG{INT} = $SIG{TERM} = sub { $ending = 10; };
-	}
-
-	# get any bad IPs 
-	DXCIDR::init();
-
-	unless ($is_win) {
-		$SIG{HUP} = 'IGNORE';
-		$SIG{CHLD} = sub { $zombies++ };
-
-		$SIG{PIPE} = sub { 	dbg("Broken PIPE signal received"); };
-		$SIG{IO} = sub { 	dbg("SIGIO received"); };
-		$SIG{WINCH} = $SIG{STOP} = $SIG{CONT} = 'IGNORE';
-		$SIG{KILL} = 'DEFAULT';	# as if it matters....
-
-		# catch the rest with a hopeful message
-		for (keys %SIG) {
-			if (!$SIG{$_}) {
-				#		dbg("Catching SIG $_") if isdbg('chan');
-				$SIG{$_} = sub { my $sig = shift;	DXDebug::confess("Caught signal $sig");  };
-			}
-		}
-	}
-
 	# start dupe system
 	dbg("Starting Dupe system");
 	DXDupe::init();
@@ -757,6 +746,13 @@ sub setup_start
 	dbg("Starting DX Spot system");
 	Spot->init();
 
+	# try to load the spot database if present
+	if (DXSql::init($dsn)) {
+		$dbh = DXSql->new($dsn);
+		$dbh = $dbh->connect($dsn, $dbuser, $dbpass) if $dbh;
+	}
+
+
 	# read in any existing message headers and clean out old crap
 	dbg("Reading existing Message/Bulletine headers ...");
 	DXMsg->init();
@@ -776,6 +772,13 @@ sub setup_start
 	# starting local stuff
 	dbg("Starting DXQsl system");
 	QSL::init(1);
+
+	# load bad words
+	BadWords::load();
+
+	# get any bad IPs 
+	DXCIDR::init();
+
 
 	dbg("Ooing local initialisations ...");
 	if (defined &Local::init) {

@@ -1,3 +1,9 @@
+17Mar23=======================================================================
+1. Try to nail down incoming PC92s that attempt to change the type of $myalias
+   or $mycall. 
+2. Do some housekeeping with the startup and finish debugging to make the 
+   order of messaging more logical. Also disable some messaging caused by 
+   other errors/circumstances causing various object handles disappearing.  
 10Mar23=======================================================================
 1. I am aware that there are windows nodes out there on mojo (brave, impetuous 
    that you are) and wget is not an easy option to download badip files. So, 

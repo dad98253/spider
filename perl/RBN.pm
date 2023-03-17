@@ -194,7 +194,7 @@ sub start
 	$self->{width} = 80 unless $self->{width} && $self->{width} > 80;
 	$self->{consort} = $line;	# save the connection type
 
-	LogDbg('DXCommand', "$call connected from $self->{hostname}");
+	LogDbg('err', "$call connected from $self->{hostname}");
 
 	# set some necessary flags on the user if they are connecting
 	$self->{registered} = 1;
@@ -369,7 +369,7 @@ sub normal
 						dbg("seeme: result '$buf'") if isdbg('seeme');
 						$uchan->local_send('S', $buf);
 					} else {
-						LogDbg("RBN Someone is playing silly persons $rcall is not a user and cannot do 'seeme', ignored and reset");
+						LogDbg('err',"RBN Someone is playing silly persons $rcall is not a user and cannot do 'seeme', ignored and reset");
 						del_seeme($rcall);
 					}
 				}
@@ -852,7 +852,7 @@ sub per_minute
 		next unless $dxchan->is_rbn;
 		dbg "RBN:STATS minute $dxchan->{call} raw: $dxchan->{noraw} retrieved spots: $dxchan->{norbn} delivered: $dxchan->{nospot} after filtering to users: " . scalar keys %{$dxchan->{nousers}} if isdbg('rbnstats');
 		if ($dxchan->{noraw} == 0 && $dxchan->{lasttime} > 60) {
-			LogDbg('RBN', "RBN: no input from $dxchan->{call}, disconnecting");
+			LogDbg('err', "RBN: no input from $dxchan->{call}, disconnecting");
 			$dxchan->disconnect;
 		}
 		$dxchan->{noraw} = $dxchan->{norbn} = $dxchan->{nospot} = 0; $dxchan->{nousers} = {};
@@ -908,7 +908,10 @@ sub finish
 
 sub write_cache
 {
+	return unless $json;
+
 	my $ta = [ gettimeofday ];
+	
 	$json->indent(1)->canonical(1) if isdbg 'rbncache';
 	my $s = eval {$json->encode($spots)};
 	if ($s) {

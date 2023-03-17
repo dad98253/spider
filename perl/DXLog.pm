@@ -220,8 +220,11 @@ sub Log
 sub LogDbg
 {
 	my $cat = shift;
-	DXDebug::dbg($_) for @_;
-	Log($cat, @_);
+	foreach my $m (@_) {
+		DXDebug::dbgsetcat($cat);
+		DXDebug::dbg($m);
+		Log($cat, $m);
+	}
 }
 
 sub Logclose

@@ -48,7 +48,7 @@ sub init
 sub finish
 {
 	dbg("DXQSL finished");
-	$dbm->sync;
+	$dbm->sync if $dbm;
 	undef $dbm;
 	untie %u;
 }

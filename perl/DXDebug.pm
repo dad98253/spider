@@ -28,7 +28,7 @@ use 5.10.1;
 
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT = qw(dbginit dbg dbgadd dbgsub dbglist dbgdump isdbg dbgclose dbgtrace dbgprintring confess croak cluck carp);
+@EXPORT = qw(dbginit dbg dbgadd dbgsub dbglist dbgdump isdbg dbgclose dbgtrace dbgprintring dbgsetcat confess croak cluck carp);
 
 use strict;
 use vars qw(%dbglevel $fp $callback $cleandays $keepdays $dbgringlth);
@@ -295,6 +295,12 @@ sub dbgclean
 		}
 		$date = $date->sub(1);
 	}
+}
+
+# force a category for the next (unconditional) dbg message (replace (*) with (<something>))
+sub dbgsetcat
+{
+	$_isdbg = shift;
 }
 
 1;

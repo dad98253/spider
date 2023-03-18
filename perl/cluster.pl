@@ -625,6 +625,7 @@ sub setup_start
 		$SIG{INT} = $SIG{TERM} = sub { $ending = 10; };
 	}
 
+
 	# setup location of motd & issue
 	localdata_mv($motd);
 	$motd = localdata($motd);
@@ -656,14 +657,14 @@ sub setup_start
 	{
 		die "\$myalias \& \$mycall are the same ($mycall)!, they must be different (hint: make \$mycall = '${mycall}-2';). Oh and don't forget to rerun create_sysop.pl!" if $mycall eq $myalias;
 		my $ref = DXUser::get($mycall);
-		die "$mycall missing, run the create_sysop.pl script and please RTFM" unless $ref && $ref->priv == 9;
+		die "\$mycall missing, run the create_sysop.pl script and please RTFM" unless $ref && $ref->priv == 9;
 		my $oldsort = $ref->sort;
 		if ($oldsort ne 'S') {
 			$ref->sort('S');
 			dbg("Resetting node type from $oldsort -> DXSpider ('S')");
 		}
 		$ref = DXUser::get($myalias);
-		die "$myalias missing, run the create_sysop.pl script and please RTFM" unless $ref && $ref->priv == 9;
+		die "\$myalias missing, run the create_sysop.pl script and please RTFM" unless $ref && $ref->priv == 9;
 		$oldsort = $ref->sort;
 		if ($oldsort ne 'U') {
 			$ref->sort('U');
@@ -671,6 +672,23 @@ sub setup_start
 		}
 	}
 
+	# make sure that mycall, myalias and homenode are upper case;
+	my $flag = 0;
+	if ($mycall =~ /[a-z]/) {
+		LogDbg('err', "\$mycall '$mycall' contains lower case letters, correcting");
+		$mycall = uc $mycall;
+		++$flag;
+	}
+	if ($myalias =~ /[a-z]/) {
+		LogDbg('err', "\$myalias '$myalias' contains lower case letters, correcting");
+		$myalias = uc $myalias;
+		++$flag;
+	}
+	if ($flag) {
+		LogDbg('err', "DXVars.pm has $flag errors. See above. Please edit DXVars.pm to correct");
+		sleep 10;
+	}
+	
 	# read any route cache there might be
 	Route::read_cache() if $save_route_cache;
 	

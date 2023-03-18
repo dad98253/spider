@@ -354,7 +354,7 @@ sub close
 	my $ip = shift;
 	# add a record to the connect list
 	$self->{lastin} = $main::systime;
-	my $ref = [$startt || $self->{startt}, $main::systime];
+	my $ref = [$self->{startt} || $startt, $main::systime];
 	push @$ref, $ip if $ip;
 	push @{$self->{connlist}}, $ref;
 	shift @{$self->{connlist}} if @{$self->{connlist}} > $maxconnlist;

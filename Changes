@@ -1,3 +1,7 @@
+21Mar23=======================================================================
+1. Fix DXUtil is_ipaddr function which was accidentally included in previous
+   commit.
+2. Do not extract IP addresses to create routing info as default.
 17Mar23=======================================================================
 1. Try to nail down incoming PC92s that attempt to change the type of $myalias
    or $mycall. 

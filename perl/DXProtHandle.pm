@@ -49,7 +49,7 @@ use vars qw($pc11_max_age $pc23_max_age $last_pc50 $eph_restime $eph_info_restim
 			$eph_pc15_restime $pc9x_past_age $pc9x_dupe_age
 			$pc10_dupe_age $pc92_slug_changes $last_pc92_slug
 			$pc92Ain $pc92Cin $pc92Din $pc92Kin $pc9x_time_tolerance
-			$pc92filterdef $senderverify $pc11_dwell_time $pc11_extract_route $pc92_ad_enabled $pc92c_ipaddr_enabled
+			$pc92filterdef $senderverify $pc11_dwell_time $pc61_extract_route $pc92_ad_enabled $pc92c_ipaddr_enabled
 		   );
 
 $pc9x_dupe_age = 60;			# catch loops of circular (usually) D records
@@ -63,7 +63,7 @@ $pc9x_time_tolerance;           # thing a node might send - once an hour and we 
 $senderverify = 0;				# 1 - check for forged PC11 or PC61.
                                 # 2 - if forged, dump them.
 $pc11_dwell_time = 2;			# number of seconds to wait for a PC61 to come to substitute the PC11
-$pc11_extract_route = 1;		# generate missing  user route entry and IP address from passing PC61s
+$pc61_extract_route = 0;		# generate missing  user route entry and IP address from passing PC61s
 
 
 $pc92filterdef = bless ([
@@ -259,13 +259,15 @@ sub handle_11
 		}
 	}
 
-	# Populate the routing table
-	$self->populate_routing_table($pc->[7], $pc->[6], $pc->[8]);
-	my $r = Route::User::get($pc->[6]);
+	my $rug = Route::User::get($pc->[6]);
 	if ($pcno == 61) {
 		unless ($pc->[8] && is_ipaddr($pc->[8])) {
-			dbg("PCPROT: ROUTE $self->{call} NO IP ADDRESS in '$line'!");	
+			LogDbg('err', "PCPROT: ROUTE $self->{call} NO IP ADDRESS in '$line'!");
+			return;
 		}
+		if ($pc61_extract_route) {
+			$self->populate_routing_table($pc->[7], $pc->[6], $pc->[8]);
+		} 
 	}
 
 	# this is where we decide to delay PC11s in the hope that a PC61 will be along soon.
@@ -316,11 +318,11 @@ sub handle_11
 
 
 			# If we have an ip address we can promote by route
-			if ($r && $r->ip) {
+			if ($rug && $rug->ip) {
 				$pcno = 61;
 				$pc->[0] = 'PC61';
 				my $hops = $pc->[8];
-				$pc->[8] = $spot[14] = $r->ip;
+				$pc->[8] = $spot[14] = $rug->ip;
 				++$rpc11_to_61;
 				my $percent = $pc11_rx ? $rpc11_to_61 * 100 / $pc11_rx : 0;
 				dbg(sprintf("PROMOTED $self->{call}: ROUTE pc11 $key PROMOTED to pc61 with IP $spot[14] pc61: $pc61_rx pc11: $pc11_rx route->pc61 $rpc11_to_61 (%0.1f%%)", $percent)) if isdbg("pc11");
@@ -382,23 +384,29 @@ sub handle_11
 	#
 	# As for spots generated from non-PC92 nodes, we'll see after about  do_pc9x3h20m...
 	#
-	if ($senderverify) {
+	if ($senderverify || isdbg('suspicious')) {
+		my $sv = $senderverify;
+		$sv += 2 if isdbg('suspicious');
 		my $nroute = Route::Node::get($pc->[7]);
-		my $uroute = Route::Node::get($pc->[6]);
 		my $local = DXChannel::get($pc->[7]);
-		
+		my $uref = DXUser::get_current($pc->[7]);
+		my $s = '';
+		my $ip = $pcno == 61 ?  $pc->[8] : '';
+
 		if ($nroute && ($nroute->last_PC92C || ($local && !$local->do_pc9x))) {
-			my $s = '';
-			my $ip = $pcno == 61 ?  $pc->[8] : '';
 #			$s .= "User $pc->[6] not logged in, " unless $uroute;
 			$s .= "User $pc->[6] not on node $pc->[7], " unless $nroute->is_user($pc->[6]);
 #			$s .= "Node $pc->[7] at '$ip' not on Node's IP " . $nroute->ip if $ip && $nroute && $nroute->ip && $nroute->ip ne $ip;
-			if ($s) {
-				my $action = $senderverify > 1 ? ", DUMPED" : '';
-				$s =~ s/, $//;
-				dbg("PCPROT: Suspicious Spot $pc->[2] on $pc->[1] by $pc->[6]($ip)\@$pc->[7] $s$action");
-				return unless $senderverify < 2;
-			}
+		}
+		# check for ip addresses on spots from non-pc9x nodes - if they have it's likely done by DXSpider nodes
+		#if ($ip && ($nroute  && !$nroute->do_pc9x || $uref && $uref->is_spider)) {
+		#	$s .= "PC$pcno has spurious ipaddr '$ip' from non-pc9x node $pc->[7]";
+		#}
+		if ($s) {
+			my $action = $sv > 1 ? ", DUMPED" : '';
+			$s =~ s/, $//;
+			dbg("PCPROT: Bad Spot $pc->[2] on $pc->[1] by $pc->[6]($ip)\@$pc->[7] $s$action");
+			return unless $sv < 2;
 		}
 	}
 
@@ -733,23 +741,23 @@ sub handle_16
 		$conf = $conf eq '*';
 
 		# reject this if we think it is a node already
-		my $r = Route::Node::get($call);
-		my $u = DXUser::get_current($call) unless $r;
-		if ($r || ($u && $u->is_node)) {
+		my $rng = Route::Node::get($call);
+		my $u = DXUser::get_current($call) unless $rng;
+		if ($rng || ($u && $u->is_node)) {
 			dbg("PCPROT: $call is a node") if isdbg('chanerr');
 			next;
 		}
 
-		$r = Route::User::get($call);
+		my $rug = Route::User::get($call);
 		my $flags = Route::here($here)|Route::conf($conf);
 
-		if ($r) {
-			my $au = $r->addparent($parent);
-			if ($r->flags != $flags) {
-				$r->flags($flags);
-				$au = $r;
+		if ($rug) {
+			my $au = $rug->addparent($parent);
+			if ($rug->flags != $flags) {
+				$rug->flags($flags);
+				$au = $rug;
 			}
-			push @rout, $r if $h && $au;
+			push @rout, $rug if $h && $au;
 		} else {
 			my @ans = $parent->add_user($call, $flags);
 			push @rout, @ans if $h && @ans;
@@ -2450,7 +2458,7 @@ sub handle_93
 		}
 	}
 
-	$self->populate_routing_table($onode, $from, $ipaddr);
+	$self->populate_routing_table($onode, $from, $ipaddr) if $pc61_extract_route;
 
 	# if it is routeable then then treat it like a talk
 	my $ref = Route::get($to);

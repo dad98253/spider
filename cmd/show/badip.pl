@@ -1,7 +1,7 @@
 #
-# set list of bad dx nodes
+# show (or find) list of bad dx nodes
 #
-# Copyright (c) 2021 - Dirk Koopman G1TLH
+# Copyright (c) 2021-2023 - Dirk Koopman G1TLH
 #
 #
 #
@@ -19,7 +19,6 @@ my $width = $self->width // 80;
 
 #$DB::single = 1;
 
-
 my @list = map {my $s = $_; $s =~ s|/32$||; $maxlth = length $s if length $s > $maxlth; $s =~ /^1$/?undef:$s} DXCIDR::list();
 my @l;
 $maxlth //= 20;
@@ -27,15 +26,18 @@ my $n = int ($width/($maxlth+1));
 my $format = "\%-${maxlth}s " x $n;
 chop $format;
 
+my $count = 0;
+
 foreach my $list (@list) {
 	if (@in) {
-		for (@in) {
-			if ($list =~ /$_/i) {
+		for my $in (@in) {
+			if ($list =~ /$in/i) {
 				push @out, $list;
-				last;
+				++$count;
 			}
 		}
 	} else {
+		++$count;
 		if (@l > $n) {
 			push @out, sprintf $format, @l;
 			@l = ();
@@ -48,5 +50,5 @@ unless (@in) {
 	push @out, sprintf $format, @l;
 }
 
-push @out, "show/badip: " . scalar @out . " records found";
+push @out, "show/badip: $count records found";
 return (1, @out);

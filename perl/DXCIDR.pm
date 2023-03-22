@@ -68,6 +68,7 @@ sub _read
 
 sub _load
 {
+	return unless $active;
 	my $suffix = shift;
 	my @in = _read($suffix);
 	return 0 unless @in;
@@ -122,20 +123,30 @@ sub add
 {
 	return 0 unless $active;
 	my $count = 0;
+	my @out;
 	
 	for my $ip (@_) {
 		# protect against stupid or malicious
 		next unless is_ipaddr($ip);
 		next if $ip =~ /^127\./;
 		next if $ip =~ /^::1$/;
+		next if find($ip);
 		if ($ip =~ /\./) {
-			$ipv4->add_any($ip);
-			++$count;
-			++$count4;
+			eval {$ipv4->add_any($ip)};
+			if ($@) {
+				push @out, $@;
+			} else {
+				++$count;
+				++$count4;
+			}
 		} elsif ($ip =~ /:/) {
-			$ipv6->add_any($ip);
-			++$count;
-			++$count6;
+			eval {$ipv6->add_any($ip)};
+			if ($@) {
+				push @out, $@;
+			} else {
+				++$count;
+				++$count6;
+			}
 		} else {
 			LogDbg('err', "DXCIDR::add non-ip address '$ip' read");
 		}
@@ -165,7 +176,7 @@ sub _sort
 		my @ip = split m|/|;
 		push @in, [inet_pton(m|:|?AF_INET6:AF_INET, $ip[0]), @ip];
 	}
-	@out = sort {$a->[1] cmp $b->[1]} @in;
+	@out = sort {$a->[0] <=> $b->[0]} @in;
 	return map { "$_->[1]/$_->[2]"} @out;
 }
 
@@ -197,7 +208,12 @@ sub init
 		return;
 	}
 
-	import Net::CIDR::Lite;
+	eval {import Net::CIDR::Lite };
+	if ($@) {
+		LogDbg('DXProt', "DXCIDR: import Net::CIDR::Lite error $@");
+		return;
+	}
+
 	$active = 1;
 
 	my $fn = _fn();

@@ -15,6 +15,7 @@ use File::Copy;
 use Data::Dumper;
 use Time::HiRes qw(gettimeofday tv_interval);
 use Text::Wrap;
+use Socket qw(AF_INET6 AF_INET inet_pton);
 
 use strict;
 
@@ -448,7 +449,18 @@ sub is_latlong
 # is it an ip address?
 sub is_ipaddr
 {
-    return $_[0] =~ /^(?:(?:\:\:)?\d+\.\d+\.\d+\.\d+)|(?:[0-9a-f]{1,4}\:)?(?:\:[0-9a-f]{1,4}(?:\:\:)?){1,6}$/i;
+
+	if ($_[0] =~ /:/) {
+		if (inet_pton(AF_INET6, $_[0])) {
+			return ($_[0] =~ /([:0-9a-f]+)/);
+		}
+#		use re 'debug';
+#		return ($1) if $_[0] =~ /^(\:?(?:\:?[0-9a-f]{1,4}){1,8}?)$/i;
+#		no re 'debug';
+	} else {
+		return ($_[0] =~ /^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/);
+	}
+	return undef;
 }
 
 # is it a zulu time hhmmZ

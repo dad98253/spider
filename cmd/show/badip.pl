@@ -16,36 +16,38 @@ my @added;
 my @in = split /\s+/, $line;
 my $maxlth = 0;
 my $width = $self->width // 80;
+my $count = 0;
 
 #$DB::single = 1;
 
-my @list = map {my $s = $_; $s =~ s|/32$||; $maxlth = length $s if length $s > $maxlth; $s =~ /^1$/?undef:$s} DXCIDR::list();
-my @l;
-$maxlth //= 20;
-my $n = int ($width/($maxlth+1));
-my $format = "\%-${maxlth}s " x $n;
-chop $format;
-
-my $count = 0;
-
-foreach my $list (@list) {
-	if (@in) {
-		for my $in (@in) {
-			if ($list =~ /$in/i) {
-				push @out, $list;
-				++$count;
-			}
+# query
+if (@in) {
+	foreach my $ip (@in) {
+		if (DXCIDR::find($ip)) {
+			push @out, "$ip FOUND";
+			++$count;
+		} else {
+			push @out, "$ip CLEAN";
 		}
-	} else {
+	}
+	return (1, @out);
+} else {
+# list
+	my @list = map {my $s = $_; $s =~ s!/(?:32|128)$!!; $maxlth = length $s if length $s > $maxlth; $s =~ /^1$/?undef:$s} DXCIDR::list();
+	my @l;
+	$maxlth //= 20;
+	my $n = int ($width/($maxlth+1));
+	my $format = "\%-${maxlth}s " x $n;
+	chop $format;
+
+	foreach my $list (@list) {
 		++$count;
 		if (@l > $n) {
 			push @out, sprintf $format, @l;
 			@l = ();
 		}
 		push @l, $list;
-	}
-}	
-unless (@in) {
+	}	
 	push @l, "" while @l < $n;
 	push @out, sprintf $format, @l;
 }

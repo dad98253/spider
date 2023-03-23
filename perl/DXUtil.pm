@@ -46,6 +46,14 @@ $pi = 3.141592653589;
 $d2r = ($pi/180);
 $r2d = (180/$pi);
 
+our $ptonok;
+
+BEGIN {
+	$ptonok = !defined inet_pton(AF_INET,  '016.17.184.1')
+		&& !defined inet_pton(AF_INET6, '2067::1:')
+		# Some old versions of Socket are hopelessly broken
+		&& length(inet_pton(AF_INET, '1.1.1.1')) == 4;
+}
 
 # a full time for logging and other purposes
 sub atime
@@ -449,16 +457,22 @@ sub is_latlong
 # is it an ip address?
 sub is_ipaddr
 {
-
-	if ($_[0] =~ /:/) {
-		if (inet_pton(AF_INET6, $_[0])) {
-			return ($_[0] =~ /([:0-9a-f]+)/);
+	if ($ptonok) {
+		if ($_[0] =~ /:/) {
+			if (inet_pton(AF_INET6, $_[0])) {
+				return ($_[0] =~ /([:0-9a-f]+)/);
+			}
+		} else {
+			if (inet_pton(AF_INET, $_[0])) {
+				return ($_[0] =~ /([\.\d]+)/);
+			}
 		}
-#		use re 'debug';
-#		return ($1) if $_[0] =~ /^(\:?(?:\:?[0-9a-f]{1,4}){1,8}?)$/i;
-#		no re 'debug';
 	} else {
-		return ($_[0] =~ /^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/);
+		if ($_[0] =~ /:/) {
+			return ($_[0] =~ /^(:?:?(?:[0-9a-f]{1,4}\:)?(?:\:[0-9a-f]{1,4}(?:\:\:)?){1,8})$/i);	
+		} else {
+			return ($_[0] =~ /^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/);
+		}
 	}
 	return undef;
 }
@@ -563,7 +577,7 @@ sub diffms
 sub difft
 {
 	my $b = shift;
-	my $adds = shift;
+	my $adds = shift // 0;
 	
 	my $t;
 	if (ref $b eq 'ARRAY') {

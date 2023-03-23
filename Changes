@@ -1,3 +1,10 @@
+23Mar23=======================================================================
+1. Fix DXCIDR brokenness introduced recently, speeded up DXCIDR::sort, allow
+   sh/badip 2a05:dfc7:402a::1 45.134.225.96 159.69.38.160 to test individual
+   IP address as well as show the default (of every badip).
+2. Speed up and be more strict with input for is_ipaddr(<ip address>). 
+22Mar23=======================================================================
+1. Fix warning in DXUtil::difft.
 21Mar23=======================================================================
 1. Fix DXUtil is_ipaddr function which was accidentally included in previous
    commit.

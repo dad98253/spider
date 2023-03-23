@@ -130,7 +130,7 @@ sub add
 		next unless is_ipaddr($ip);
 		next if $ip =~ /^127\./;
 		next if $ip =~ /^::1$/;
-		next if find($ip);
+#		next if find($ip);
 		if ($ip =~ /\./) {
 			eval {$ipv4->add_any($ip)};
 			if ($@) {
@@ -172,11 +172,27 @@ sub _sort
 {
 	my @in;
 	my @out;
-	for (@_) {
-		my @ip = split m|/|;
-		push @in, [inet_pton(m|:|?AF_INET6:AF_INET, $ip[0]), @ip];
+	my $c;
+	for my $i (@_) {
+		my @s;
+		
+		my @ip = split m|/|, $i;
+		if ($ip[0] =~ /:/) {
+			@s = map{$_ ? hex($_) : 0} split /:/, $ip[0];
+		} else {
+			@s = map{$_ ? $_+0 : 0} split /\./, $ip[0];
+		}
+		while (@s < 8) {
+			push @s, 0;
+		}
+#		my $s = pack "S*", reverse @s;
+		my $s = pack "n*", @s; 
+#		my $s = join ':', map {sprintf "%04d:", $_} @s;
+#		push @in, [inet_pton(m|:|?AF_INET6:AF_INET, $ip[0]), @ip];
+		push @in, [$s, @ip];
 	}
-	@out = sort {$a->[0] <=> $b->[0]} @in;
+	@out = sort {$a->[0] cmp $b->[0]} @in;
+#	@out = sort {$a->[0] <=> $b->[0]} @in;
 	return map { "$_->[1]/$_->[2]"} @out;
 }
 

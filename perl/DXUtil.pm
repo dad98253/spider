@@ -457,6 +457,7 @@ sub is_latlong
 # is it an ip address?
 sub is_ipaddr
 {
+	$_[0] =~ s|/\d+$||;
 	if ($ptonok) {
 		if ($_[0] =~ /:/) {
 			if (inet_pton(AF_INET6, $_[0])) {

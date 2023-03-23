@@ -24,7 +24,7 @@ my $count = 0;
 if (@in) {
 	foreach my $ip (@in) {
 		if (DXCIDR::find($ip)) {
-			push @out, "$ip FOUND";
+			push @out, "$ip DIRTY";
 			++$count;
 		} else {
 			push @out, "$ip CLEAN";

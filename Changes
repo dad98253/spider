@@ -1,3 +1,5 @@
+25Mar23=======================================================================
+1. Changed the default of X and Y (in item 2 below) to 27 and 20 respectively.
 24Mar23=======================================================================
 1. Restore perl regex version of is_ipaddr. This *should* allow windows 
    updates to work again.

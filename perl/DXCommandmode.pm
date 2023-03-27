@@ -65,8 +65,8 @@ $cmdimportdir = "$main::root/cmd_import"; # the base directory for importing com
 $users = 0;					  # no of users on this node currently
 $maxusers = 0;				  # max no users on this node for this run
 $maxcmdlth = 512;				# max length of incoming cmd line (including the command and any arguments
-$maxcmdcount = 16;				# max no cmds entering $cmdinterval seconds
-$cmdinterval = 9;				# if user enters more than $maxcmdcount in $cmdinterval seconds, they are logged off
+$maxcmdcount = 27;				# max no cmds entering $cmdinterval seconds
+$cmdinterval = 20;				# if user enters more than $maxcmdcount in $cmdinterval seconds, they are logged off
 
 #
 # obtain a new connection this is derived from dxchannel

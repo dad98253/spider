@@ -1,3 +1,19 @@
+24Mar23=======================================================================
+1. Restore perl regex version of is_ipaddr. This *should* allow windows 
+   updates to work again.
+2. Added cmd entry rate limiting. If a user sends X commmands in Y secs then
+   they are disconnected without notice. The defaults are X 
+   ($DXCommandmode::maxcmdcount) = 16 and Y ($DXCommandmode::cmdinterval) = 9.
+   
+   These can be changed by the startup script. 
+
+   These default values are set generously deliberately to allow certain user 
+   programs to get with the program and reduce the number of cmds that they
+   issue on connection down to something reasonable. For instance, I cannot
+   see why things like name, qth, lat/long/QRA (amongst several other sticky
+   user attributes that only need to be entered once) are sent on every login.
+
+   These default values WILL reduce over time. 
 23Mar23=======================================================================
 1. Fix DXCIDR brokenness introduced recently, speeded up DXCIDR::sort, allow
    sh/badip 2a05:dfc7:402a::1 45.134.225.96 159.69.38.160 to test individual

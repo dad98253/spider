@@ -50,7 +50,7 @@ use DXCIDR;
 use strict;
 use vars qw(%Cache %cmd_cache $errstr %aliases $scriptbase %nothereslug
 	$maxbadcount $msgpolltime $default_pagelth $cmdimportdir $users $maxusers
-    $maxcmdlth
+    $maxcmdlth $maxcmdcount $cmdinterval
 );
 
 %Cache = ();					# cache of dynamically loaded routine's mod times
@@ -64,8 +64,9 @@ $cmdimportdir = "$main::root/cmd_import"; # the base directory for importing com
                                           # this does not exist as default, you need to create it manually
 $users = 0;					  # no of users on this node currently
 $maxusers = 0;				  # max no users on this node for this run
-
 $maxcmdlth = 512;				# max length of incoming cmd line (including the command and any arguments
+$maxcmdcount = 16;				# max no cmds entering $cmdinterval seconds
+$cmdinterval = 9;				# if user enters more than $maxcmdcount in $cmdinterval seconds, they are logged off
 
 #
 # obtain a new connection this is derived from dxchannel
@@ -254,6 +255,10 @@ sub start
 	$self->lastmsgpoll($main::systime);
 	$self->{user_interval} = $self->user->user_interval || $main::user_interval; # allow user to change idle time between prompts
 	$self->prompt;
+
+	$self->{cmdintstart} = 0; # set when systime > this + cmdinterval and a command entered, cmdcount set to 0
+	$self->{cmdcount} = 0;		   # incremented on a coming in. If this value > $maxcmdcount, disconnect
+
 }
 
 #
@@ -365,8 +370,7 @@ sub normal
 							for (@{$self->{talklist}}) {
 								if ($self->{state} eq 'talk') {
 									$self->send_talks($_, $l);
-								}
-								else {
+								} else {
 									send_chats($self, $_, $l)
 								}
 							}
@@ -417,6 +421,20 @@ sub normal
 		#		} else {
 		my @cmd = split /\s*\\n\s*/, $cmdline;
 		foreach my $l (@cmd) {
+
+			# rate limiting code
+			
+			if (($self->{cmdintstart} + $cmdinterval <= $main::systime) || $self->{inscript}) {
+				$self->{cmdintstart} = $main::systime;
+				$self->{cmdcount} = 1;
+				dbg("$self->{call} started cmdinterval") if isdbg('cmdcount');
+			} else {
+				if (++$self->{cmdcount} > $maxcmdcount) {
+					LogDbg('baduser', qq{User $self->{call} sent $self->{cmdcount} (>= $maxcmdcount) cmds in $cmdinterval seconds starting at } . atime($self->{cmdintstart}) . ", disconnected" );
+					$self->disconnect;
+				}
+				dbg("$self->{call} cmd: '$l' cmdcount = $self->{cmdcount} in $cmdinterval secs") if isdbg('cmdcount');
+			}
 			$self->send_ans(run_cmd($self, $l));
 		}
 #		}

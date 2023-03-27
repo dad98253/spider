@@ -25,6 +25,7 @@
 package DXDebug;
 
 use 5.10.1;
+use warnings;
 
 require Exporter;
 @ISA = qw(Exporter);

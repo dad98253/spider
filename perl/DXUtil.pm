@@ -15,8 +15,6 @@ use File::Copy;
 use Data::Dumper;
 use Time::HiRes qw(gettimeofday tv_interval);
 use Text::Wrap;
-use Socket qw(AF_INET6 AF_INET inet_pton);
-
 use strict;
 
 use vars qw(@month %patmap $pi $d2r $r2d @ISA @EXPORT);
@@ -46,14 +44,24 @@ $pi = 3.141592653589;
 $d2r = ($pi/180);
 $r2d = (180/$pi);
 
-our $ptonok;
 
-BEGIN {
-	$ptonok = !defined inet_pton(AF_INET,  '016.17.184.1')
-		&& !defined inet_pton(AF_INET6, '2067::1:')
-		# Some old versions of Socket are hopelessly broken
-		&& length(inet_pton(AF_INET, '1.1.1.1')) == 4;
-}
+# BEGIN {
+# 	our $enable_ptonok = 0;
+# 	our $ptonok;
+
+
+# 	if ($enable_ptonok && !$main::is_win) {
+# 		eval {require Socket; Socket->import(qw(AF_INET6 AF_INET inet_pton)); };
+# 		unless ($@) {
+# 			$ptonok = !defined inet_pton(AF_INET,  '016.17.184.1')
+# 				&& !defined inet_pton(AF_INET6, '2067::1:')
+# 				# Some old versions of Socket are hopelessly broken
+# 				&& length(inet_pton(AF_INET, '1.1.1.1')) == 4;
+# 		}
+# 	}
+# }
+
+
 
 # a full time for logging and other purposes
 sub atime
@@ -458,23 +466,23 @@ sub is_latlong
 sub is_ipaddr
 {
 	$_[0] =~ s|/\d+$||;
-	if ($ptonok) {
+	# if ($ptonok) {
+	# 	if ($_[0] =~ /:/) {
+	# 		if (inet_pton(AF_INET6, $_[0])) {
+	# 			return ($_[0] =~ /([:0-9a-f]+)/);
+	# 		}
+	# 	} else {
+	# 		if (inet_pton(AF_INET, $_[0])) {
+	# 			return ($_[0] =~ /([\.\d]+)/);
+	# 		}
+	# 	}
+	# } else {
 		if ($_[0] =~ /:/) {
-			if (inet_pton(AF_INET6, $_[0])) {
-				return ($_[0] =~ /([:0-9a-f]+)/);
-			}
-		} else {
-			if (inet_pton(AF_INET, $_[0])) {
-				return ($_[0] =~ /([\.\d]+)/);
-			}
-		}
-	} else {
-		if ($_[0] =~ /:/) {
-			return ($_[0] =~ /^(:?:?(?:[0-9a-f]{1,4}\:)?(?:\:[0-9a-f]{1,4}(?:\:\:)?){1,8})$/i);	
+			return ($_[0] =~ /^((?:\:?\:?[0-9a-f]{0,4}){1,8}\:?\:?)$/i);	
 		} else {
 			return ($_[0] =~ /^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/);
 		}
-	}
+#	}
 	return undef;
 }
 
@@ -646,3 +654,5 @@ sub is_numeric
 {
 	return $_[0] =~ /^[\.\d]+$/;
 }
+
+1;

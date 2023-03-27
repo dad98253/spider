@@ -115,7 +115,6 @@ use Mojolicious 7.26;
 use Mojo::IOLoop;
 $DOWARN = 1;
 
-use DXDebug;
 use Msg;
 use IntMsg;
 use Internet;
@@ -169,6 +168,7 @@ use IsoTime;
 use BPQMsg;
 use RBN;
 use DXCIDR;
+use DXDebug;
 
 use Data::Dumper;
 use IO::File;

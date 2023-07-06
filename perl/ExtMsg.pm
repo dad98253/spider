@@ -71,7 +71,7 @@ sub _rcv
     my $conn = shift; # $rcv_now complement of $flush
 	my $msg = shift;
     my $sock = $conn->{sock};
-    return unless defined($sock);
+    return unless defined($sock);  #  jck - trap here to see incoming messages
 	return if $conn->{disconnecting};
 
 	if ($conn->{state} eq 'WL' && $conn->{sort} =~ /^I/ && $msg =~ /^PROXY/) {

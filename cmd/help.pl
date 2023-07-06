@@ -104,6 +104,7 @@ foreach $in (<$defh>) {
 		$in =~ s/=== //;
 		my ($priv, $cmd, $desc) = split /\^/, $in;
 		next if $priv > $self->priv;             # ignore subcommands that are of no concern
+		if ( "commands" =~ /^$line/i ){push @out, " $cmd";}
 		next unless $cmd =~ /^$line/i;
 		push @out, "$cmd $desc" unless $cmd =~ /-$/o;
 		$state = 1;

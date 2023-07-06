@@ -924,6 +924,10 @@ Look at the APROPOS <string> command which will search the help database
 for the <string> you specify and give you a list of likely commands
 to look at with HELP.
 
+To see a list of all availabale commands, enter:
+
+  HELP commands
+
 === 5^INIT <node>^Re-initialise a link to an AK1A compatible node
 This command attempts to re-initialise a link to a (usually) AK1A node
 that has got confused, usually by a protocol loop of some kind. It may
